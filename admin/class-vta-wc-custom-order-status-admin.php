@@ -52,7 +52,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
 
-	}
+    }
 
 	/**
 	 * Register the stylesheets for the admin area.
@@ -99,5 +99,20 @@ class Vta_Wc_Custom_Order_Status_Admin {
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/vta-wc-custom-order-status-admin.js', array( 'jquery' ), $this->version, false );
 
 	}
+
+	public function create_settings_page() {
+
+        // Add the menu item and page
+        $page_title = 'VTA WooCommerce Custom Order Statuses Settings';
+        $menu_title = 'Awesome Plugin';
+        $capability = 'manage_options';
+        $slug = 'smashing_fields';
+        $callback = array( $this, 'plugin_settings_page_content' );
+        $icon = 'dashicons-admin-plugins';
+        $position = 100;
+
+        add_menu_page( $page_title, $menu_title, $capability, $slug, $callback, $icon, $position );
+
+    }
 
 }

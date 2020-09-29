@@ -35,10 +35,10 @@ class Vta_Wc_Custom_Order_Status_Admin_Display {
 
               <?php
 
-              settings_fields( 'dbi_example_plugin_options' );
-              do_settings_sections( 'dbi_example_plugin' );
+              settings_fields( 'vta-new-fields' );
+              do_settings_sections( 'vta-new-fields' );
 
-              submit_button();
+              submit_button( 'Create Order Status' );
 
               ?>
 
@@ -49,6 +49,35 @@ class Vta_Wc_Custom_Order_Status_Admin_Display {
         </div>
 
     <?php }
+
+    /**
+     * Settings Section display. Nested within new_order_status
+     * @param $args
+     */
+    public function settings_section_new( $args ) { ?>
+
+
+
+    <?php }
+
+    /**
+     * @param $args
+     */
+    public function settings_field_new( $args ) { ?>
+
+      <label for="<?php echo $args['id']; ?>">
+          <?php echo $args['title']; ?>
+      </label>
+
+      <input type="text"
+             name="<?php echo $args['id']; ?>"
+             id="<?php echo $args['id']; ?>">
+
+      <?php
+
+      register_setting( 'vta-wc-new-order-status-field', $args['id'] );
+
+    }
 
 }
 ?>

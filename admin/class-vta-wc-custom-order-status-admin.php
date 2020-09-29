@@ -10,6 +10,8 @@
  * @subpackage Vta_Wc_Custom_Order_Status/admin
  */
 
+include 'partials/vta-wc-custom-order-status-admin-display.php';
+
 /**
  * The admin-specific functionality of the plugin.
  *
@@ -100,18 +102,51 @@ class Vta_Wc_Custom_Order_Status_Admin {
 
 	}
 
-	public function create_settings_page() {
+	public function create_admin_menu() {
 
         // Add the menu item and page
-        $page_title = 'VTA WooCommerce Custom Order Statuses Settings';
-        $menu_title = 'Awesome Plugin';
+        $page_title = 'VTA WooCommerce Custom Order Status Settings';
+        $menu_title = 'Custom Order Status';
         $capability = 'manage_options';
-        $slug = 'smashing_fields';
-        $callback = array( $this, 'plugin_settings_page_content' );
-        $icon = 'dashicons-admin-plugins';
-        $position = 100;
+        $menu_slug = 'vta-wc-custom-order-status';
+        $callback = array( Vta_Wc_Custom_Order_Status_Admin_Display::class, 'order_status_list' );
+        $icon = 'dashicons-clipboard';
+        $position = 26; // place right before WooCommerce in admin menu
 
-        add_menu_page( $page_title, $menu_title, $capability, $slug, $callback, $icon, $position );
+        add_menu_page( $page_title, $menu_title, $capability, $menu_slug, $callback, $icon, $position );
+
+        $this->add_order_status_subpage();
+
+    }
+
+    public function add_order_status_subpage() {
+
+        $parent_slug = 'vta-wc-custom-order-status';
+        $page_title = 'New Order Status';
+        $menu_title = 'New';
+        $capability = 'manage_options';
+        $menu_slug = 'vta-wc-custom-order-status-new';
+        $callback = array( Vta_Wc_Custom_Order_Status_Admin_Display::class, 'new_order_status' );
+
+        add_submenu_page( $parent_slug, $page_title, $menu_title, $capability, $menu_slug, $callback, null );
+
+    }
+
+    public function edit_order_status() {
+
+
+
+    }
+
+    public function setup_sections() {
+
+
+
+    }
+
+    private function register_main_settings_fields() {
+
+
 
     }
 

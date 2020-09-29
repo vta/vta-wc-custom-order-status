@@ -11,7 +11,45 @@
  * @package    Vta_Wc_Custom_Order_Status
  * @subpackage Vta_Wc_Custom_Order_Status/admin/partials
  */
+class Vta_Wc_Custom_Order_Status_Admin_Display {
+
+    /**
+     * Front-end display for the main settings/list page
+     */
+    public function order_status_list() { ?>
+
+        <h1>VTA's WooCommerce Custom Order Status</h1>
+
+    <?php }
+
+    /**
+     * Front-end display for creating a new custom WooCommerce order status
+     */
+    public function new_order_status() { ?>
+
+        <div class="wrap">
+
+          <h2>New Order Status</h2>
+
+          <form action="options.php" method="post">
+
+              <?php
+
+              settings_fields( 'dbi_example_plugin_options' );
+              do_settings_sections( 'dbi_example_plugin' );
+
+              submit_button();
+
+              ?>
+
+  <!--          <input name="submit" class="button button-primary" type="submit" value="--><?php //esc_attr_e( 'Save' ); ?><!--" />-->
+
+          </form>
+
+        </div>
+
+    <?php }
+
+}
 ?>
 
-<!-- This file should primarily consist of HTML with a little bit of PHP. -->
-<h1>Hello World!</h1>

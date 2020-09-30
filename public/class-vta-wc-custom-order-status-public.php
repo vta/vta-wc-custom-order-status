@@ -100,4 +100,26 @@ class Vta_Wc_Custom_Order_Status_Public {
 
 	}
 
+    /**
+     *
+     */
+	public function register_custom_order_statuses() {
+
+	    // create custom post type of "Custom Order Status"
+	    register_post_type(
+	        'custom_order_status',
+            array(
+                'labels' => array(
+                    'name' => __( 'Custom Order Statuses' ),
+                    'singular_name' => __( 'Custom Order Status' )
+                ),
+                'public' => false,
+                'description' => 'Customizable WooCommerce custom order statuses that re-purposed for VTA Document Services workflow.',
+
+            )
+        );
+
+
+    }
+
 }

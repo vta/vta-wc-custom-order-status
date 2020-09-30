@@ -33,15 +33,6 @@ class Vta_Wc_Custom_Order_Status_Admin_Display {
 
           <form action="options.php" method="post">
 
-              <?php
-
-              settings_fields( 'vta-new-fields' );
-              do_settings_sections( 'vta-new-fields' );
-
-              submit_button( 'Create Order Status' );
-
-              ?>
-
   <!--          <input name="submit" class="button button-primary" type="submit" value="--><?php //esc_attr_e( 'Save' ); ?><!--" />-->
 
           </form>
@@ -49,35 +40,6 @@ class Vta_Wc_Custom_Order_Status_Admin_Display {
         </div>
 
     <?php }
-
-    /**
-     * Settings Section display. Nested within new_order_status
-     * @param $args
-     */
-    public function settings_section_new( $args ) { ?>
-
-
-
-    <?php }
-
-    /**
-     * @param $args
-     */
-    public function settings_field_new( $args ) { ?>
-
-      <label for="<?php echo $args['id']; ?>">
-          <?php echo $args['title']; ?>
-      </label>
-
-      <input type="text"
-             name="<?php echo $args['id']; ?>"
-             id="<?php echo $args['id']; ?>">
-
-      <?php
-
-      register_setting( 'vta-wc-new-order-status-field', $args['id'] );
-
-    }
 
 }
 ?>

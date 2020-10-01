@@ -14,30 +14,16 @@
 class Vta_Wc_Custom_Order_Status_Admin_Display {
 
     /**
-     * Front-end display for the main settings/list page
+     * Front-end display for the order status color list page
      */
-    public function order_status_list() { ?>
+    public function order_status_color_list() { ?>
 
-        <h1>VTA's WooCommerce Custom Order Status</h1>
-
-    <?php }
-
-    /**
-     * Front-end display for creating a new custom WooCommerce order status
-     */
-    public function new_order_status() { ?>
-
-        <div class="wrap">
-
-          <h2>New Order Status</h2>
-
-          <form action="options.php" method="post">
-
-  <!--          <input name="submit" class="button button-primary" type="submit" value="--><?php //esc_attr_e( 'Save' ); ?><!--" />-->
-
-          </form>
-
-        </div>
+        <h2>Order Status colors</h2>
+        <ul>
+          <li>Fee</li>
+          <li>Fi</li>
+          <li>Foh</li>
+        </ul>
 
     <?php }
 

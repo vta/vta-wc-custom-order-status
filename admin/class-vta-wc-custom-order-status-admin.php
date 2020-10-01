@@ -102,33 +102,19 @@ class Vta_Wc_Custom_Order_Status_Admin {
 
 	}
 
-	public function create_admin_menu() {
+    /**
+     * Add Color Settings subpage to Custom Order Status (custom posts) admin menu
+     */
+    public function add_color_subpage() {
 
-        // Add the menu item and page
-        $page_title = 'VTA WooCommerce Custom Order Status Settings';
-        $menu_title = 'Custom Order Status';
+        $parent_slug = 'edit.php?post_type=custom_order_status';
+        $page_title = 'Color Settings';
+        $menu_title = 'Color Settings';
         $capability = 'manage_options';
-        $menu_slug = 'vta-wc-custom-order-status';
-        $callback = array( Vta_Wc_Custom_Order_Status_Admin_Display::class, 'order_status_list' );
-        $icon = 'dashicons-clipboard';
-        $position = 26; // place right before WooCommerce in admin menu
+        $menu_slug = 'custom_order_status_color-settings';
+        $callback = array( Vta_Wc_Custom_Order_Status_Admin_Display::class, 'order_status_color_list' );
 
-        add_menu_page( $page_title, $menu_title, $capability, $menu_slug, $callback, $icon, $position );
-
-        $this->add_order_status_subpage();
-
-    }
-
-    public function add_order_status_subpage() {
-
-        $parent_slug = 'vta-wc-custom-order-status';
-        $page_title = 'New Order Status';
-        $menu_title = 'New';
-        $capability = 'manage_options';
-        $menu_slug = 'vta-wc-custom-order-status-new';
-        $callback = array( Vta_Wc_Custom_Order_Status_Admin_Display::class, 'new_order_status' );
-
-        add_submenu_page( $parent_slug, $page_title, $menu_title, $capability, $menu_slug, $callback, null );
+        add_submenu_page( $parent_slug, $page_title, $menu_title, $capability, $menu_slug, $callback, 1 );
 
     }
 

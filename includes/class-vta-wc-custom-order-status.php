@@ -156,7 +156,7 @@ class Vta_Wc_Custom_Order_Status {
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
-		$this->loader->add_action( 'admin_menu', $plugin_admin , 'create_admin_menu' );
+		$this->loader->add_action( 'admin_menu', $plugin_admin , 'add_color_subpage' );
 
 	}
 

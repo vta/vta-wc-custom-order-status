@@ -103,7 +103,8 @@ class Vta_Wc_Custom_Order_Status_Admin {
 	}
 
     /**
-     * Add Color Settings subpage to Custom Order Status (custom posts) admin menu
+     * Add Color Settings subpage to Custom Order Status (custom posts) admin menu.
+     * Hooked to admin_menu.
      */
     public function add_color_subpage() {
 
@@ -114,7 +115,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
         $menu_slug = 'custom_order_status_color-settings';
         $callback = array( Vta_Wc_Custom_Order_Status_Admin_Display::class, 'order_status_color_list' );
 
-        add_submenu_page( $parent_slug, $page_title, $menu_title, $capability, $menu_slug, $callback, 1 );
+        add_submenu_page( $parent_slug, $page_title, $menu_title, $capability, $menu_slug, $callback, 2 );
 
     }
 

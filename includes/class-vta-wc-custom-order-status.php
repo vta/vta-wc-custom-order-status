@@ -157,6 +157,7 @@ class Vta_Wc_Custom_Order_Status {
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 		$this->loader->add_action( 'admin_menu', $plugin_admin , 'add_color_subpage' );
+		$this->loader->add_action( 'add_meta_boxes', $plugin_admin, 'custom_order_add_inputs' );
 
 	}
 
@@ -174,6 +175,7 @@ class Vta_Wc_Custom_Order_Status {
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 		$this->loader->add_action( 'init', $plugin_public, 'register_custom_order_statuses' );
+//        $this->loader->add_action( 'add_meta_boxes', $plugin_public, 'custom_order_add_inputs' );
 
 	}
 

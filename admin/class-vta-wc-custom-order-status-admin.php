@@ -119,4 +119,18 @@ class Vta_Wc_Custom_Order_Status_Admin {
 
     }
 
+    /**
+     * Inject Custom HTML into post-new.php for post type of "custom_order_status"
+     */
+    public function custom_order_add_inputs() {
+
+        $id = 'cos_add_input_wrapper';
+        $title = __( 'Create Custom Order Status', $this->plugin_name );
+        $callback = array( Vta_Wc_Custom_Order_Status_Admin_Display::class, 'order_status_create' );
+        $screen = 'custom_order_status';
+
+        add_meta_box( $id, $title, $callback, $screen );
+
+    }
+
 }

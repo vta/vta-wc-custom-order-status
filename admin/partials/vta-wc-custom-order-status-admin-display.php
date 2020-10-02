@@ -27,6 +27,20 @@ class Vta_Wc_Custom_Order_Status_Admin_Display {
 
     <?php }
 
+    /**
+     *
+     */
+    public function order_status_create( $post ) {
+
+      error_log(json_encode($post, JSON_PRETTY_PRINT));
+
+      ?>
+
+        <h2>Create a New Order Status</h2>
+        <h1>Please Work</h1>
+
+    <?php }
+
 }
 ?>
 

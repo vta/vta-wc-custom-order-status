@@ -119,11 +119,6 @@ class Vta_Wc_Custom_Order_Status_Public {
             'not_found_in_trash' => __( 'No Books found in Trash', 'vta-wc-custom-order-status' )
         );
 
-        // supported features for custom post
-//        $support = array(
-//            'excerpt'
-//        );
-
 	    // create custom post type of "Custom Order Status"
 	    register_post_type(
 	        'custom_order_status',
@@ -131,8 +126,7 @@ class Vta_Wc_Custom_Order_Status_Public {
                 'labels' => $labels,
                 'public' => true,
                 'description' => 'Customizable WooCommerce custom order statuses that re-purposed for VTA Document Services workflow.',
-                'hierarchical' => false,
-//                'supports' => $support
+                'hierarchical' => false
             )
         );
 

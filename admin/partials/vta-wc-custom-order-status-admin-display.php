@@ -28,16 +28,33 @@ class Vta_Wc_Custom_Order_Status_Admin_Display {
     <?php }
 
     /**
-     *
+     * @param $post - post information of newly created order status (unused)
      */
     public function order_status_create( $post ) {
 
-      error_log(json_encode($post, JSON_PRETTY_PRINT));
-
       ?>
+      <p class="cos-form-field">
+        <label for="order_status_name">New Custom Order Status</label>
+        <input type="text" name="order_status_name" id="order_status_name" value>
+      </p>
 
-        <h2>Create a New Order Status</h2>
-        <h1>Please Work</h1>
+      <p class="cos-form-field">
+        <label for="order_status_color">Order Status Chip Color</label>
+        <input type="color" name="order_status_color" id="order_status_name" value>
+      </p>
+
+      <p class="cos-form-field">
+        <span>Allow Reorder</span>
+
+        <label for="order_status_reorder-yes">Yes</label>
+        <input type="radio" name="order_status_reorder" id="order_status_reorder-yes" value="true">
+        <label for="order_status_reorder-yes">No</label>
+        <input type="radio" name="order_status_reorder" id="order_status_reorder-no" value="false" checked>
+      </p>
+
+      <p class="cos-form-field">
+        <input type="submit" class="button button-primary button-large" value="Create">
+      </p>
 
     <?php }
 

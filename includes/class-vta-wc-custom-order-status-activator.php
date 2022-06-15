@@ -22,15 +22,17 @@
  */
 class Vta_Wc_Custom_Order_Status_Activator {
 
-	/**
-	 * Short Description. (use period)
-	 *
-	 * Long Description.
-	 *
-	 * @since    1.0.0
-	 */
-	public static function activate() {
+    /**
+     * Checks for WooCommerce before activating plugin
+     * @return void
+     */
+    public static function activate(): void {
+        $wc_is_active = is_plugin_active('woocommerce/woocommerce.php');
 
-	}
+        if ( !$wc_is_active ) {
+            $error_msg = "WooCommerce must be installed and activated! Plugin activation stopped";
+            die($error_msg);
+        }
+    }
 
 }

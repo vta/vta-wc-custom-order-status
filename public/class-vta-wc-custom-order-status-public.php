@@ -100,4 +100,42 @@ class Vta_Wc_Custom_Order_Status_Public {
 
 	}
 
+    /**
+     *
+     */
+	public function register_custom_order_statuses() {
+
+	    // labels for Custom Order Status (custom post)
+        $labels = array(
+            'name' => __( 'Custom Order Statuses', 'vta-wc-custom-order-status' ),
+            'singular_name' => __( 'Custom Order Status', 'vta-wc-custom-order-status' ),
+            'add_new' => __( 'New Order Status', 'vta-wc-custom-order-status' ),
+            'add_new_item' => __( 'Add New Order Status', 'vta-wc-custom-order-status' ),
+            'edit_item' => __( 'Edit Book', 'vta-wc-custom-order-status' ),
+            'new_item' => __( 'New Book', 'vta-wc-custom-order-status' ),
+            'view_item' => __( 'View Books', 'vta-wc-custom-order-status' ),
+            'search_items' => __( 'Search Books', 'vta-wc-custom-order-status' ),
+            'not_found' =>  __( 'No Books Found', 'vta-wc-custom-order-status' ),
+            'not_found_in_trash' => __( 'No Books found in Trash', 'vta-wc-custom-order-status' )
+        );
+
+	    // create custom post type of "Custom Order Status"
+	    register_post_type(
+	        'custom_order_status',
+            array(
+                'labels' => $labels,
+                'public' => true,
+                'description' => 'Customizable WooCommerce custom order statuses that re-purposed for VTA Document Services workflow.',
+                'hierarchical' => false
+            )
+        );
+
+	    // remove certain post type elements from "Custom Order Status" post types
+        // (we can set also, but we want to customize every input from post-new.php)
+        remove_post_type_support( 'custom_order_status', 'title' );
+        remove_post_type_support( 'custom_order_status', 'editor' );
+        remove_post_type_support( 'custom_order_status', 'thumbnail' );
+        remove_post_type_support( 'custom_order_status', 'post-format' );
+
+    }
 }

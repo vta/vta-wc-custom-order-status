@@ -10,6 +10,8 @@
  * @subpackage Vta_Wc_Custom_Order_Status/admin
  */
 
+include 'partials/vta-wc-custom-order-status-admin-display.php';
+
 /**
  * The admin-specific functionality of the plugin.
  *
@@ -20,8 +22,7 @@
  * @subpackage Vta_Wc_Custom_Order_Status/admin
  * @author     James Pham <jamespham93@yahoo.com>
  */
-class Vta_Wc_Custom_Order_Status_Admin
-{
+class Vta_Wc_Custom_Order_Status_Admin {
 
     /**
      * The ID of this plugin.
@@ -101,19 +102,49 @@ class Vta_Wc_Custom_Order_Status_Admin
 
     }
 
-    public function create_settings_page() {
+    /**
+     * Add Color Settings subpage to Custom Order Status (custom posts) admin menu.
+     * Hooked to admin_menu.
+     */
+    public function add_color_subpage() {
 
-        // Add the menu item and page
-        $page_title = 'VTA WooCommerce Custom Order Statuses Settings';
-        $menu_title = 'Awesome Plugin';
-        $capability = 'manage_options';
-        $slug       = 'smashing_fields';
-        $callback   = array( $this, 'plugin_settings_page_content' );
-        $icon       = 'dashicons-admin-plugins';
-        $position   = 100;
+        $parent_slug = 'edit.php?post_type=custom_order_status';
+        $page_title  = 'Color Settings';
+        $menu_title  = 'Color Settings';
+        $capability  = 'manage_options';
+        $slug        = 'smashing_fields';
+        $callback    = array( $this, 'plugin_settings_page_content' );
+        $icon        = 'dashicons-admin-plugins';
+        $position    = 100;
 
-        add_menu_page($page_title, $menu_title, $capability, $slug, $callback, $icon, $position);
+//        add_menu_page($page_title, $menu_title, $capability, $slug, $callback, $icon, $position);
 
+        $menu_slug = 'custom_order_status_color-settings';
+        $callback  = array( Vta_Wc_Custom_Order_Status_Admin_Display::class, 'order_status_color_list' );
+
+        add_submenu_page(
+            $parent_slug,
+            $page_title,
+            $menu_title,
+            $capability,
+            $menu_slug,
+            $callback,
+            2
+        );
+
+    }
+
+    /**
+     * Inject Custom HTML into post-new.php for post type of "custom_order_status"
+     */
+    public function custom_order_add_inputs() {
+
+        $id       = 'cos_add_input_wrapper';
+        $title    = __('Create Custom Order Status', $this->plugin_name);
+        $callback = array( Vta_Wc_Custom_Order_Status_Admin_Display::class, 'order_status_create' );
+        $screen   = 'custom_order_status';
+
+        add_meta_box($id, $title, $callback, $screen);
     }
 
 }

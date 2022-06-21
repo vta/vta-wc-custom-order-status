@@ -30,7 +30,6 @@ class Vta_Wc_Custom_Order_Status_Deactivator {
 	 * @since    1.0.0
 	 */
 	public static function deactivate() {
-
 	}
 
 }

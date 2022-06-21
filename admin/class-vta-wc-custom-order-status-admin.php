@@ -51,6 +51,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
 
         $this->plugin_name = $plugin_name;
         $this->version     = $version;
+        $this->sync_default_statuses();
 
     }
 
@@ -128,19 +129,95 @@ class Vta_Wc_Custom_Order_Status_Admin {
                 'show_ui'      => true,
                 'show_in_menu' => true,
                 'description'  => 'Customizable WooCommerce custom order statuses that re-purposed for VTA Document Services workflow.',
-                'hierarchical' => false
+                'hierarchical' => false,
+                'menu_icon'    => 'dashicons-block-default'
             )
         );
 
         // remove certain post type elements from "Custom Order Status" post types
         // (we can set also, but we want to customize every input from post-new.php)
-//        remove_post_type_support( 'vta_order_status', 'title' );
+        remove_post_type_support('vta_order_status', 'title');
         remove_post_type_support('vta_order_status', 'editor');
         remove_post_type_support('vta_order_status', 'thumbnail');
         remove_post_type_support('vta_order_status', 'post-formats');
         remove_post_type_support('vta_order_status', 'page-attributes');
         remove_post_type_support('vta_order_status', 'post-format');
 
+    }
+
+    /**
+     * Gets default OR current order statuses from WC and creates|update posts.
+     * @return void
+     * TODO - move into a different class in the future
+     */
+    public function sync_default_statuses(): void {
+
+        error_log('running "sync_default_statuses"');
+
+        $default_colors = [
+            'wc-received'   => '#EE360F',
+            'wc-processing' => '#E65100',
+            'wc-finishing'  => '#EEEA13',
+            'wc-proof'      => '#F5991B',
+            'wc-ready'      => '#87EC13',
+            'wc-pony'       => '#20EE13',
+            'wc-completed'  => '#20EE13',
+            'wc-on-hold'    => '#DD13EE',
+            'wc-cancelled'  => '#A09FA0',
+        ];
+
+        $default_statuses = wc_get_order_statuses();
+
+        // package arguments into array to convert to POST
+        foreach ( $default_statuses as $order_status_key => $order_status_val ) {
+            $arr = [
+                'name'          => $order_status_key,
+                'title'         => $order_status_val,
+                'vta_cos_color' => $default_colors[$order_status_key] ?? '#7D7D7D'
+            ];
+            $this->save_order_status($arr);
+        }
+    }
+
+    /**
+     * Saves WC order status to Post Type
+     * @param array $arr
+     * @return void
+     * @throws InvalidArgumentException
+     */
+    private function save_order_status(
+        array $arr = [
+            'name'                   => '',
+            'title'                  => '',
+            'vta_cos_color'          => '#7D7D7D',
+            'vta_cos_order_num'      => 0,
+            'vta_cos_is_reorderable' => false,
+        ]
+    ): void {
+
+        if ( !is_admin() ) {
+            require_once ABSPATH . '/wp-admin/includes/post.php';
+        }
+
+        if ( empty($arr['name']) || empty($arr['title']) ) {
+            $error_msg = 'Cannot have empty "name" or "title" field in $arr parameter.';
+            throw new InvalidArgumentException($error_msg);
+        }
+
+        $post_id   = post_exists($arr['title']);
+        $post_args = [
+            'ID'         => $post_id,
+            'post_title' => $arr['title'],
+            'name'       => $arr['name'],
+            'post_type'  => 'vta_order_status'
+        ];
+        $post_id   = wp_insert_post($post_args);
+
+        if ( $post_id ) {
+            update_post_meta($post_id, 'vta_cos_color', $arr['vta_cos_color'] ?? '#7D7D7D');
+            update_post_meta($post_id, 'vta_cos_order_num', $arr['vta_cos_order_num'] ?? 0);
+            update_post_meta($post_id, 'vta_cos_is_reorderable', $arr['vta_cos_is_reorderable'] ?? false);
+        }
     }
 
 //    /**

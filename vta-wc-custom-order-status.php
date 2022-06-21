@@ -81,4 +81,4 @@ function run_vta_wc_custom_order_status() {
 }
 
 //run_vta_wc_custom_order_status();
-add_action('plugins_loaded', 'run_vta_wc_custom_order_status');
+add_action('wp', 'run_vta_wc_custom_order_status', 99);

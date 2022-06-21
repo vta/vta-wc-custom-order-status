@@ -79,4 +79,6 @@ function run_vta_wc_custom_order_status() {
 	$plugin->run();
 
 }
-run_vta_wc_custom_order_status();
+
+//run_vta_wc_custom_order_status();
+add_action('plugins_loaded', 'run_vta_wc_custom_order_status');

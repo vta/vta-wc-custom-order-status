@@ -220,8 +220,9 @@ class Vta_Wc_Custom_Order_Status_Admin {
         // (we can set also, but we want to customize every input from post-new.php)
         remove_post_type_support('vta_order_status', 'editor');
 
-        add_action('add_meta_box', ['Vta_Wc_Custom_Order_Status_Admin', 'add_meta_boxes']);
+//        add_action('add_meta_box', ['Vta_Wc_Custom_Order_Status_Admin', 'add_meta_boxes']);
         self::replace_title_placeholder();
+        self::add_meta_boxes();
     }
 
     /**
@@ -252,7 +253,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
      * @return void
      */
     static public function input_color_picker(): void {
-        echo "example box";
+        include_once 'views/partials/color-picker.php';
     }
 
 }

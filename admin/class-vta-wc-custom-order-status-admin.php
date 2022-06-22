@@ -102,50 +102,6 @@ class Vta_Wc_Custom_Order_Status_Admin {
     }
 
     /**
-     * Sets up Custom Post Type for custom order status management.
-     */
-    static public function register_custom_order_statuses() {
-
-        // labels for Custom Order Status (custom post)
-        $labels = array(
-            'name'               => __('Custom Order Statuses', 'vta-wc-custom-order-status'),
-            'singular_name'      => __('Custom Order Status', 'vta-wc-custom-order-status'),
-            'add_new'            => __('New Order Status', 'vta-wc-custom-order-status'),
-            'add_new_item'       => __('Add New Order Status', 'vta-wc-custom-order-status'),
-            'edit_item'          => __('Edit Order Status', 'vta-wc-custom-order-status'),
-            'new_item'           => __('New Order Status', 'vta-wc-custom-order-status'),
-            'view_item'          => __('View Order Status', 'vta-wc-custom-order-status'),
-            'search_items'       => __('Search Statuses', 'vta-wc-custom-order-status'),
-            'not_found'          => __('No Order Statuses Found', 'vta-wc-custom-order-status'),
-            'not_found_in_trash' => __('No Order Statuses found in Trash', 'vta-wc-custom-order-status')
-        );
-
-        // create custom post type of "Custom Order Status"
-        register_post_type(
-            'vta_order_status',
-            array(
-                'labels'       => $labels,
-                'public'       => false,
-                'show_ui'      => true,
-                'show_in_menu' => true,
-                'description'  => 'Customizable WooCommerce custom order statuses that re-purposed for VTA Document Services workflow.',
-                'hierarchical' => false,
-                'menu_icon'    => 'dashicons-block-default'
-            )
-        );
-
-        // remove certain post type elements from "Custom Order Status" post types
-        // (we can set also, but we want to customize every input from post-new.php)
-        remove_post_type_support('vta_order_status', 'title');
-        remove_post_type_support('vta_order_status', 'editor');
-        remove_post_type_support('vta_order_status', 'thumbnail');
-        remove_post_type_support('vta_order_status', 'post-formats');
-        remove_post_type_support('vta_order_status', 'page-attributes');
-        remove_post_type_support('vta_order_status', 'post-format');
-
-    }
-
-    /**
      * Gets default OR current order statuses from WC and creates|update posts.
      * @return void
      * TODO - move into a different class in the future
@@ -217,7 +173,86 @@ class Vta_Wc_Custom_Order_Status_Admin {
             update_post_meta($post_id, 'vta_cos_order_num', $arr['vta_cos_order_num'] ?? 0);
             update_post_meta($post_id, 'vta_cos_is_reorderable', $arr['vta_cos_is_reorderable'] ?? false);
         }
-        
+
+    }
+
+    // TODO - CONSIDERING MOVING EVERYTHING BELOW HERE INTO ITS OWN CLASS
+
+    /**
+     * Sets up Custom Post Type for custom order status management.
+     */
+    static public function register_custom_order_statuses() {
+        // labels for Custom Order Status (custom post)
+        $labels = array(
+            'name'               => __('Custom Order Statuses', 'vta-wc-custom-order-status'),
+            'singular_name'      => __('Custom Order Status', 'vta-wc-custom-order-status'),
+            'add_new'            => __('New Order Status', 'vta-wc-custom-order-status'),
+            'add_new_item'       => __('Add New Order Status', 'vta-wc-custom-order-status'),
+            'edit_item'          => __('Edit Order Status', 'vta-wc-custom-order-status'),
+            'new_item'           => __('New Order Status', 'vta-wc-custom-order-status'),
+            'view_item'          => __('View Order Status', 'vta-wc-custom-order-status'),
+            'search_items'       => __('Search Statuses', 'vta-wc-custom-order-status'),
+            'not_found'          => __('No Order Statuses Found', 'vta-wc-custom-order-status'),
+            'not_found_in_trash' => __('No Order Statuses found in Trash', 'vta-wc-custom-order-status')
+        );
+
+        // create custom post type of "Custom Order Status"
+        register_post_type(
+            'vta_order_status',
+            array(
+                'labels'       => $labels,
+                'public'       => false,
+                'show_ui'      => true,
+                'show_in_menu' => true,
+                'description'  => 'Customizable WooCommerce custom order statuses that re-purposed for VTA Document Services workflow.',
+                'hierarchical' => false,
+                'menu_icon'    => 'dashicons-block-default'
+            )
+        );
+
+//        self::customize_edit_screen();
+    }
+
+    // CUSTOM POST EDITOR FOR "CUSTOM ORDER STATUS" POST TYPES
+
+    public function customize_edit_screen(): void {
+        // remove certain post type elements from "Custom Order Status" post types
+        // (we can set also, but we want to customize every input from post-new.php)
+        remove_post_type_support('vta_order_status', 'editor');
+
+        add_action('add_meta_box', ['Vta_Wc_Custom_Order_Status_Admin', 'add_meta_boxes']);
+        self::replace_title_placeholder();
+    }
+
+    /**
+     * Replaces "Add Title" with "Order Status Name"
+     * @return void
+     */
+    static public function replace_title_placeholder(): void {
+        add_filter('enter_title_here', fn() => 'Order Status Name');
+    }
+
+    /**
+     * Adds meta boxes to CPT add/edit page
+     * @return void
+     */
+    public function add_meta_boxes(): void {
+        add_meta_box(
+            'cos-color-picker',
+            'Order Status Color Code',
+            [ Vta_Wc_Custom_Order_Status_Admin::class, 'input_color_picker' ],
+            'vta_order_status', // 'vta_custom_order'
+            'normal',
+            'high'
+        );
+    }
+
+    /**
+     * Color Picker
+     * @return void
+     */
+    static public function input_color_picker(): void {
+        echo "example box";
     }
 
 }

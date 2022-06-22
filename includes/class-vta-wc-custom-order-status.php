@@ -140,7 +140,6 @@ class Vta_Wc_Custom_Order_Status {
         $plugin_i18n = new Vta_Wc_Custom_Order_Status_i18n();
 
         $this->loader->add_action('plugins_loaded', $plugin_i18n, 'load_plugin_textdomain');
-
     }
 
     /**
@@ -158,8 +157,9 @@ class Vta_Wc_Custom_Order_Status {
 //		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 //		$this->loader->add_action( 'admin_menu', $plugin_admin , 'register_menu' );
 //		$this->loader->add_action( 'add_meta_boxes', $plugin_admin, 'custom_order_add_inputs' );
-//        $this->loader->add_action( 'add_meta_boxes', $plugin_admin, 'custom_order_add_inputs' );
-        $this->loader->add_action('init', $plugin_admin, 'register_custom_order_statuses', 9, 0);
+//      $this->loader->add_action( 'add_meta_boxes', $plugin_admin, 'custom_order_add_inputs' );
+        $this->loader->add_action('init', $plugin_admin, 'register_custom_order_statuses');
+        $this->loader->add_action('admin_init', $plugin_admin, 'customize_edit_screen');
 
     }
 

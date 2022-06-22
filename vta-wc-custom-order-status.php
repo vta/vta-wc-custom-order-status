@@ -25,6 +25,8 @@
  * Domain Path:       /languages
  */
 
+require_once 'admin/class-vta-wc-custom-order-status-admin.php';
+
 // If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) {
 	die;
@@ -81,4 +83,10 @@ function run_vta_wc_custom_order_status() {
 }
 
 //run_vta_wc_custom_order_status();
+
+/**
+ * 1. init - register CPT separately from plugin execution
+ * 2. plugins_loaded - allow WC & WP core to load first (dependencies)
+ */
+add_action('init', ['Vta_Wc_Custom_Order_Status_Admin', 'register_custom_order_statuses'], 10);
 add_action('wp', 'run_vta_wc_custom_order_status', 99);

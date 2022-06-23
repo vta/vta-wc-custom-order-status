@@ -258,7 +258,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
     }
 
     /**
-     * Lets user choose color code for order status
+     * UI for users to determine color code for order status
      * @return void
      */
     static public function input_color_picker(): void {
@@ -266,11 +266,16 @@ class Vta_Wc_Custom_Order_Status_Admin {
     }
 
     /**
-     * Lets user define if order is reorderable
+     * UI for users define if order is reorderable
      * @return void
      */
     static public function reorderable_checkox(): void {
         include_once 'views/partials/reorderable-checkbox.php';
     }
 
+    // CUSTOM SETTINGS API
+
+    public function settings_api_init() {
+
+    }
 }

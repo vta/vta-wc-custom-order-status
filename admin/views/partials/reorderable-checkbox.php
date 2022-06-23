@@ -1,6 +1,6 @@
 <?php
 global $post_id;
-$reorderable = get_post_meta($post_id, 'vta_cos_reorderable', true);
+$reorderable = get_post_meta($post_id, 'vta_cos_is_reorderable', true);
 ?>
 <label for="reorderable-checkbox">Is Reordable? </label>
 <input type="checkbox"
@@ -16,6 +16,6 @@ $reorderable = get_post_meta($post_id, 'vta_cos_reorderable', true);
         reordeableCheckbox.change(function () {
 
         });
-        
+
     })(jQuery);
 </script>

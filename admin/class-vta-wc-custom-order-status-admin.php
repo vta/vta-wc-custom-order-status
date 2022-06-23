@@ -273,6 +273,10 @@ class Vta_Wc_Custom_Order_Status_Admin {
 
     // CUSTOM SETTINGS API
 
+    /**
+     * Add Settings page under "Custom Order Statuses" menu
+     * @return void
+     */
     public function register_options_page() {
         add_submenu_page(
             'edit.php?post_type=vta_order_status',
@@ -284,11 +288,11 @@ class Vta_Wc_Custom_Order_Status_Admin {
         );
     }
 
+    /**
+     * Initialize Settings page for plugin & settings sections/fields
+     * @return void
+     */
     public function settings_api_init() {
-//        $args = [
-//            'type' => 'array',
-//            'description' => 'Reorder the custom order status. This order will be shown in the settings page.'
-//        ];
 
         // Register new page in Custom Order Status Plugin
         register_setting(
@@ -296,20 +300,35 @@ class Vta_Wc_Custom_Order_Status_Admin {
             'vta_order_status_options'
         );
 
+        // Settings section
         add_settings_section(
-            'vta_cos_order',
-            'Custom Order Arrangement',
-            [$this, 'render_settings_order_field'],
+            'vta_cos_order_status',
+            'Settings',
+            [$this, 'render_settings_section'],
             'vta_order_status_settings_fields',
         );
 
+        // arrangement Field
         add_settings_field(
-            'vta_cos_order_field', // As of WP 4.6 this value is used only internally.
-            // Use $args' label_for to populate the id inside the callback.
-            '',
+            'vta_cos_order_field',
+            'Order of "Order Status"',
             [$this, 'render_settings_order_field'],
-            'vta_order_status_settings',
-            'vta_cos_order',
+            'vta_order_status_settings_fields',
+            'vta_cos_order_status',
+            [
+                'label_for'         => 'wporg_field_pill',
+                'class'             => 'wporg_row',
+                'wporg_custom_data' => 'custom',
+            ]
+        );
+
+        // first auto order status
+        add_settings_field(
+            'vta_cos_new_order_status_field',
+            'New Order Statuses',
+            [$this, 'render_settings_order_field'],
+            'vta_order_status_settings_fields',
+            'vta_cos_order_status',
             [
                 'label_for'         => 'wporg_field_pill',
                 'class'             => 'wporg_row',
@@ -322,7 +341,15 @@ class Vta_Wc_Custom_Order_Status_Admin {
         include_once 'views/settings-page.php';
     }
 
+    public function render_settings_section() {
+        echo "<p>Settings section here...</p>";
+    }
+
     public function render_settings_order_field() {
         echo "<h1>Test field</h1>";
+    }
+
+    public function render_new_order_status_field() {
+        echo "<h1>New order status</h1>";
     }
 }

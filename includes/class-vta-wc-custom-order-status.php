@@ -155,11 +155,12 @@ class Vta_Wc_Custom_Order_Status {
 
 //		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 //		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
-//		$this->loader->add_action( 'admin_menu', $plugin_admin , 'register_menu' );
 //		$this->loader->add_action( 'add_meta_boxes', $plugin_admin, 'custom_order_add_inputs' );
 //      $this->loader->add_action( 'add_meta_boxes', $plugin_admin, 'custom_order_add_inputs' );
         $this->loader->add_action('init', $plugin_admin, 'register_custom_order_statuses');
         $this->loader->add_action('admin_init', $plugin_admin, 'customize_edit_screen');
+        $this->loader->add_action('admin_init', $plugin_admin, 'settings_api_init');
+        $this->loader->add_action( 'admin_menu', $plugin_admin , 'register_options_page' );
 
     }
 

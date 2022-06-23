@@ -146,7 +146,6 @@ class Vta_Wc_Custom_Order_Status_Admin {
             'name'                   => '',
             'title'                  => '',
             'vta_cos_color'          => '#7D7D7D',
-            'vta_cos_order_num'      => 0,
             'vta_cos_is_reorderable' => false,
         ]
     ): void {
@@ -170,7 +169,6 @@ class Vta_Wc_Custom_Order_Status_Admin {
 
         if ( $post_id ) {
             update_post_meta($post_id, 'vta_cos_color', $arr['vta_cos_color'] ?? '#7D7D7D');
-            update_post_meta($post_id, 'vta_cos_order_num', $arr['vta_cos_order_num'] ?? 0);
             update_post_meta($post_id, 'vta_cos_is_reorderable', $arr['vta_cos_is_reorderable'] ?? false);
         }
 
@@ -241,7 +239,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
         add_meta_box(
             'cos-color-picker',
             'Order Status Color Code',
-            [ Vta_Wc_Custom_Order_Status_Admin::class, 'input_color_picker' ],
+            [ Vta_Wc_Custom_Order_Status_Admin::class, 'render_input_color_picker' ],
             'vta_order_status', // 'vta_custom_order'
             'normal',
             'high'
@@ -250,7 +248,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
         add_meta_box(
             'cos-reorderable-checkbox',
             'Reorder for this Status',
-            [ Vta_Wc_Custom_Order_Status_Admin::class, 'reorderable_checkox' ],
+            [ Vta_Wc_Custom_Order_Status_Admin::class, 'render_reorderable_checkox' ],
             'vta_order_status', // 'vta_custom_order'
             'normal',
             'high'
@@ -261,7 +259,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
      * UI for users to determine color code for order status
      * @return void
      */
-    static public function input_color_picker(): void {
+    static public function render_input_color_picker(): void {
         include_once 'views/partials/color-picker.php';
     }
 
@@ -269,13 +267,44 @@ class Vta_Wc_Custom_Order_Status_Admin {
      * UI for users define if order is reorderable
      * @return void
      */
-    static public function reorderable_checkox(): void {
+    static public function render_reorderable_checkox(): void {
         include_once 'views/partials/reorderable-checkbox.php';
     }
 
     // CUSTOM SETTINGS API
 
-    public function settings_api_init() {
+    public function register_options_page() {
+        add_submenu_page(
+            'edit.php?post_type=vta_order_status',
+            'Settings',
+            'Settings',
+            'manage_options',
+            'vta_order_status_settings',
+            [$this, 'render_settings_page']
+        );
+    }
 
+    public function settings_api_init() {
+//        $args = [
+//            'type' => 'array',
+//            'description' => 'Reorder the custom order status. This order will be shown in the settings page.'
+//        ];
+
+        // Register new page in Custom Order Status Plugin
+        register_setting(
+            'vta_order_status',
+            'vta_order_status_options'
+        );
+
+//        add_settings_section(
+//            'vta_cos_order',
+//            'Custom Order Arrangement',
+//            'vta_order_status',
+//            'vta_order_status_settings'
+//        );
+    }
+
+    public function render_settings_page() {
+        include_once 'views/settings-page.php';
     }
 }

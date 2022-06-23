@@ -84,21 +84,31 @@ class Vta_Wc_Custom_Order_Status_Admin {
      * @since    1.0.0
      */
     public function enqueue_scripts() {
+        $url_obj = parse_url($_SERVER['REQUEST_URI']);
+        $path    = $url_obj['path'];
+        $query   = $url_obj['query'] ?? null;
 
-        /**
-         * This function is provided for demonstration purposes only.
-         *
-         * An instance of this class should be passed to the run() function
-         * defined in Vta_Wc_Custom_Order_Status_Loader as all of the hooks are defined
-         * in that particular class.
-         *
-         * The Vta_Wc_Custom_Order_Status_Loader will then create the relationship
-         * between the defined hooks and the functions defined in this
-         * class.
-         */
+        // separate query parameters
+        parse_str($query, $query_params);
 
-        wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/vta-wc-custom-order-status-admin.js', array( 'jquery' ), $this->version, false);
+        $is_settings_page = $path === '/wp-admin/edit.php' && !empty($query_params) &&
+            isset($query_params['post_type']) &&
+            $query_params['post_type'] === 'vta_order_status' &&
+            isset($query_params['page']) &&
+            $query_params['page'] === 'vta_order_status_settings';
 
+        if ( $is_settings_page ) {
+            wp_enqueue_script('jquery');
+            wp_enqueue_script('jquery-ui-sortable');
+            wp_enqueue_script('jquery-ui-draggable');
+            wp_enqueue_script(
+                $this->plugin_name,
+                plugin_dir_url(__FILE__) . 'js/settings.js',
+                [ 'jquery', 'jquery-ui-sortable', 'jquery-ui-draggable' ],
+                $this->version,
+                true
+            );
+        }
     }
 
     /**
@@ -284,7 +294,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
             'Settings',
             'manage_options',
             'vta_order_status_settings',
-            [$this, 'render_settings_page']
+            [ $this, 'render_settings_page' ]
         );
     }
 
@@ -304,7 +314,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
         add_settings_section(
             'vta_cos_order_status',
             'Settings',
-            [$this, 'render_settings_section'],
+            [ $this, 'render_settings_section' ],
             'vta_order_status_settings_fields',
         );
 
@@ -312,13 +322,12 @@ class Vta_Wc_Custom_Order_Status_Admin {
         add_settings_field(
             'vta_cos_order_field',
             'Order of "Order Status"',
-            [$this, 'render_settings_order_field'],
+            [ $this, 'render_settings_order_field' ],
             'vta_order_status_settings_fields',
             'vta_cos_order_status',
             [
-                'label_for'         => 'wporg_field_pill',
-                'class'             => 'wporg_row',
-                'wporg_custom_data' => 'custom',
+                'label_for' => '',
+                'class'     => 'vta-cos-settings-row'
             ]
         );
 
@@ -326,13 +335,12 @@ class Vta_Wc_Custom_Order_Status_Admin {
         add_settings_field(
             'vta_cos_new_order_status_field',
             'New Order Statuses',
-            [$this, 'render_settings_order_field'],
+            [ $this, 'render_settings_order_field' ],
             'vta_order_status_settings_fields',
             'vta_cos_order_status',
             [
-                'label_for'         => 'wporg_field_pill',
-                'class'             => 'wporg_row',
-                'wporg_custom_data' => 'custom',
+                'label_for' => '',
+                'class'     => 'vta-cos-settings-row',
             ]
         );
     }
@@ -341,15 +349,30 @@ class Vta_Wc_Custom_Order_Status_Admin {
         include_once 'views/settings-page.php';
     }
 
+    /**
+     * Renders Setting Section for Custom Order Statuses.
+     * NOTE: Section HTML precedes settings fields.
+     * @return void
+     */
     public function render_settings_section() {
-        echo "<p>Settings section here...</p>";
+        ?>
+        <p>These settings apply to all "Custom Order Statuses" as a whole.</p>
+        <?php
     }
 
+    /**
+     * Form field for settings arrangement (order) of Custom Order Statuses
+     * @return void
+     */
     public function render_settings_order_field() {
-        echo "<h1>Test field</h1>";
+        include_once 'views/partials/settings/order-field.php';
     }
 
+    /**
+     * Form field for settings
+     * @return void
+     */
     public function render_new_order_status_field() {
-        echo "<h1>New order status</h1>";
+        include_once 'views/partials/settings/new-order-field.php';
     }
 }

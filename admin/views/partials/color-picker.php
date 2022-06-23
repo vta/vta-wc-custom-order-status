@@ -1,9 +1,9 @@
 <?php
 // TODO - put JS in script file
-$post_id = get_post()->ID;
+global $post_id;
 $color   = get_post_meta($post_id, 'vta_cos_color', true);
 ?>
-<label>Color</label>
+<label for="color-picker">Color</label>
 <input type="color"
        id="color-picker"
        title="Custom Order Status Color Picker"

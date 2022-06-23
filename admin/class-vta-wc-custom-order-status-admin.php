@@ -246,14 +246,31 @@ class Vta_Wc_Custom_Order_Status_Admin {
             'normal',
             'high'
         );
+
+        add_meta_box(
+            'cos-reorderable-checkbox',
+            'Reorder for this Status',
+            [ Vta_Wc_Custom_Order_Status_Admin::class, 'reorderable_checkox' ],
+            'vta_order_status', // 'vta_custom_order'
+            'normal',
+            'high'
+        );
     }
 
     /**
-     * Color Picker
+     * Lets user choose color code for order status
      * @return void
      */
     static public function input_color_picker(): void {
         include_once 'views/partials/color-picker.php';
+    }
+
+    /**
+     * Lets user define if order is reorderable
+     * @return void
+     */
+    static public function reorderable_checkox(): void {
+        include_once 'views/partials/reorderable-checkbox.php';
     }
 
 }

@@ -276,7 +276,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
     public function register_options_page() {
         add_submenu_page(
             'edit.php?post_type=vta_order_status',
-            'Settings',
+            'vta_order_status_settings',
             'Settings',
             'manage_options',
             'vta_order_status_settings',
@@ -292,19 +292,37 @@ class Vta_Wc_Custom_Order_Status_Admin {
 
         // Register new page in Custom Order Status Plugin
         register_setting(
-            'vta_order_status',
+            'vta_order_status_settings',
             'vta_order_status_options'
         );
 
-//        add_settings_section(
-//            'vta_cos_order',
-//            'Custom Order Arrangement',
-//            'vta_order_status',
-//            'vta_order_status_settings'
-//        );
+        add_settings_section(
+            'vta_cos_order',
+            'Custom Order Arrangement',
+            [$this, 'render_settings_order_field'],
+            'vta_order_status_settings_fields',
+        );
+
+        add_settings_field(
+            'vta_cos_order_field', // As of WP 4.6 this value is used only internally.
+            // Use $args' label_for to populate the id inside the callback.
+            '',
+            [$this, 'render_settings_order_field'],
+            'vta_order_status_settings',
+            'vta_cos_order',
+            [
+                'label_for'         => 'wporg_field_pill',
+                'class'             => 'wporg_row',
+                'wporg_custom_data' => 'custom',
+            ]
+        );
     }
 
     public function render_settings_page() {
         include_once 'views/settings-page.php';
+    }
+
+    public function render_settings_order_field() {
+        echo "<h1>Test field</h1>";
     }
 }

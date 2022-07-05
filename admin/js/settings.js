@@ -1,4 +1,4 @@
-/**
+/**{}
  * @title VTA Custom Order Status - Settings JS
  * @description script for settings page
  */
@@ -21,9 +21,12 @@
         });
     }
 
+    let orderStatusArr = JSON.stringify(returnStatusNameId());
+    orderStatusArrangement.val(orderStatusArr);
+
     sortable.sortable({
         update: function (event, ui) {
-            const orderStatusArr = JSON.stringify(returnStatusNameId());
+            orderStatusArr = JSON.stringify(returnStatusNameId());
             orderStatusArrangement.val(orderStatusArr);
         }
     });

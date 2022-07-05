@@ -40,10 +40,12 @@ class Vta_Wc_Custom_Order_Status_Admin {
      */
     private string $version;
 
-    private string $post_type      = 'vta_order_status';
-    private string $settings_name  = 'vta_order_status_options';
-    private string $settings_page  = 'vta_order_status_settings';
-    private string $settings_field = 'vta_order_status_settings_fields';
+    private string $post_type                    = 'vta_order_status';
+    private string $settings_name                = 'vta_order_status_options';
+    private string $default_order_status_key     = 'order_status_default';
+    private string $order_status_arrangement_key = 'order_status_arrangement';
+    private string $settings_page                = 'vta_order_status_settings';
+    private string $settings_field               = 'vta_order_status_settings_fields';
 
     /**
      * Initialize the class and set its properties.
@@ -185,7 +187,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
      */
     public function register_custom_order_statuses() {
         // labels for Custom Order Status (custom post)
-        $labels = array(
+        $labels = [
             'name'               => __('Custom Order Statuses', 'vta-wc-custom-order-status'),
             'singular_name'      => __('Custom Order Status', 'vta-wc-custom-order-status'),
             'add_new'            => __('New Order Status', 'vta-wc-custom-order-status'),
@@ -196,12 +198,12 @@ class Vta_Wc_Custom_Order_Status_Admin {
             'search_items'       => __('Search Statuses', 'vta-wc-custom-order-status'),
             'not_found'          => __('No Order Statuses Found', 'vta-wc-custom-order-status'),
             'not_found_in_trash' => __('No Order Statuses found in Trash', 'vta-wc-custom-order-status')
-        );
+        ];
 
         // create custom post type of "Custom Order Status"
         register_post_type(
             $this->post_type,
-            array(
+            [
                 'labels'       => $labels,
                 'public'       => false,
                 'show_ui'      => true,
@@ -209,7 +211,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
                 'description'  => 'Customizable WooCommerce custom order statuses that re-purposed for VTA Document Services workflow.',
                 'hierarchical' => false,
                 'menu_icon'    => 'dashicons-block-default'
-            )
+            ]
         );
 
 //        self::customize_edit_screen();
@@ -298,6 +300,8 @@ class Vta_Wc_Custom_Order_Status_Admin {
      */
     public function settings_api_init() {
 
+        $this->sync_settings();
+
         $options = get_option($this->settings_name);
 
         // Register new page in Custom Order Status Plugin
@@ -316,27 +320,28 @@ class Vta_Wc_Custom_Order_Status_Admin {
 
         // arrangement Field
         add_settings_field(
-            'vta_cos_order_field',
+            'vta_cos_arrangement_field',
             'Order of "Order Status"',
-            [ $this, 'render_settings_order_field' ],
+            [ $this, 'render_order_arrangement_field' ],
             $this->settings_field,
             'vta_cos_order_status',
             [
-                'label_for'                => 'order_status_arrangement',
-                'order_status_arrangement' => $options['order_status_arrangement']
+                'label_for'                         => $this->order_status_arrangement_key,
+                $this->order_status_arrangement_key => $options[$this->order_status_arrangement_key] ?? '[]'
             ]
         );
 
         // first auto order status
         add_settings_field(
-            'vta_cos_new_order_status_field',
-            'New Order Statuses',
-            [ $this, 'render_new_order_status_field' ],
+            'vta_cos_default_status_field',
+            'Default Order Status',
+            [ $this, 'render_default_order_status_field' ],
             $this->settings_field,
             'vta_cos_order_status',
             [
-                'label_for' => '',
-                'class'     => 'vta-cos-settings-row',
+                'label_for'                         => $this->default_order_status_key,
+                $this->default_order_status_key     => $options[$this->default_order_status_key] ?? null,
+                $this->order_status_arrangement_key => $options[$this->order_status_arrangement_key] ?? '[]'
             ]
         );
     }
@@ -366,18 +371,18 @@ class Vta_Wc_Custom_Order_Status_Admin {
      * @param array $args
      * @return void
      */
-    public function render_settings_order_field( array $args ): void {
+    public function render_order_arrangement_field( array $args ): void {
         $label_for = esc_attr($args['label_for']);
         $name      = "$this->settings_name[$label_for]";
-        $value     = $args['order_status_arrangement'];
-        
+        $value     = $args[$this->order_status_arrangement_key];
+
         $order_status_arrangement = json_decode($value);
         ?>
 
         <input type="hidden"
+               id="<?php echo $label_for; ?>"
                name="<?php echo $name; ?>"
                value="<?php echo $value; ?>"
-               id="order_status_arrangement"
         >
         <ul id="statuses-sortable">
             <?php foreach ( $order_status_arrangement as $order_status ): ?>
@@ -397,10 +402,63 @@ class Vta_Wc_Custom_Order_Status_Admin {
     }
 
     /**
-     * Form field for settings
+     * Form field setting for default order status.
+     * @param array $args
      * @return void
      */
-    public function render_new_order_status_field(): void {
-        include_once 'views/partials/settings/new-order-field.php';
+    public function render_default_order_status_field( array $args ): void {
+        $label_for = esc_attr($args['label_for']);
+        $name      = "$this->settings_name[$label_for]";
+        $value     = $args[$this->default_order_status_key];
+
+        $order_status_arrangement = $args[$this->order_status_arrangement_key];
+        $order_status_arrangement = json_decode($order_status_arrangement);
+        ?>
+
+        <select id="<?php echo $label_for; ?>"
+                name="<?php echo $name; ?>"
+                value="<?php echo $value; ?>"
+        >
+            <?php foreach ( $order_status_arrangement as $order_status ): ?>
+
+                <option id="<?php echo $order_status->order_status_id; ?>"
+                        value="<?php echo $order_status->order_status_id; ?>">
+                    <?php echo $order_status->order_status_name; ?>
+                </option>
+
+            <?php endforeach; ?>
+        </select>
+
+        <?php
+    }
+
+    /**
+     * Assigns settings if empty or arrangement value is empty
+     * @return void
+     */
+    private function sync_settings(): void {
+        $options = get_option($this->settings_name) ?? null;
+
+        if ( empty($options) || empty($options[$this->default_order_status_key] ?? null) ) {
+            $args           = [
+                'post_status' => 'publish',
+                'post_type'   => $this->post_type,
+            ];
+            $wp_query       = new WP_Query($args);
+            $order_statuses = $wp_query->get_posts();
+            $order_statuses = is_array($order_statuses) ? $order_statuses : [];
+
+            $order_statuses = array_map(fn( WP_Post $post ) => [
+                'order_status_id'   => $post->post_name,
+                'order_status_name' => $post->post_title
+            ], $order_statuses);
+
+            $options = [
+                $this->order_status_arrangement_key => json_encode($order_statuses),
+                $this->default_order_status_key     => $order_statuses[0]->order_status_id ?? null,
+            ];
+
+            update_option($this->settings_name, $options);
+        }
     }
 }

@@ -26,6 +26,7 @@
  */
 
 require_once 'admin/class-vta-wc-custom-order-status-admin.php';
+require_once 'utils/common.php'
 
 // If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) {
@@ -76,7 +77,6 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-vta-wc-custom-order-status
  * @since    1.0.0
  */
 function run_vta_wc_custom_order_status() {
-
 	$plugin = new Vta_Wc_Custom_Order_Status();
 	$plugin->run();
 

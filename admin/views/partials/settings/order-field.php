@@ -15,3 +15,7 @@ $order_statuses = wc_get_order_statuses();
 
     <?php endforeach; ?>
 </ul>
+
+<script>
+
+</script>

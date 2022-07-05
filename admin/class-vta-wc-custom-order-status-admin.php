@@ -29,7 +29,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
      * @access   private
      * @var      string $plugin_name The ID of this plugin.
      */
-    private $plugin_name;
+    private string $plugin_name;
 
     /**
      * The version of this plugin.
@@ -38,7 +38,12 @@ class Vta_Wc_Custom_Order_Status_Admin {
      * @access   private
      * @var      string $version The current version of this plugin.
      */
-    private $version;
+    private string $version;
+
+    private string $post_type      = 'vta_order_status';
+    private string $settings_name  = 'vta_order_status_options';
+    private string $settings_page  = 'vta_order_status_settings';
+    private string $settings_field = 'vta_order_status_settings_fields';
 
     /**
      * Initialize the class and set its properties.
@@ -47,7 +52,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
      * @param string $version The version of this plugin.
      * @since    1.0.0
      */
-    public function __construct( $plugin_name, $version ) {
+    public function __construct( string $plugin_name, string $version ) {
 
         $this->plugin_name = $plugin_name;
         $this->version     = $version;
@@ -60,7 +65,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
      *
      * @since    1.0.0
      */
-    public function enqueue_styles() {
+    public function enqueue_styles(): void {
 
         /**
          * This function is provided for demonstration purposes only.
@@ -83,22 +88,11 @@ class Vta_Wc_Custom_Order_Status_Admin {
      *
      * @since    1.0.0
      */
-    public function enqueue_scripts() {
-        $url_obj = parse_url($_SERVER['REQUEST_URI']);
-        $path    = $url_obj['path'];
-        $query   = $url_obj['query'] ?? null;
+    public function enqueue_scripts(): void {
+        list('query_params' => $query_params) = get_query_params();
+        $is_settings_page = in_array($this->post_type, $query_params) && in_array($this->settings_page, $query_params);
 
-        // separate query parameters
-        parse_str($query, $query_params);
-
-        $is_settings_page = $path === '/wp-admin/edit.php' && !empty($query_params) &&
-            isset($query_params['post_type']) &&
-            $query_params['post_type'] === 'vta_order_status' &&
-            isset($query_params['page']) &&
-            $query_params['page'] === 'vta_order_status_settings';
-
-        if ( $is_settings_page ) {
-            wp_enqueue_script('jquery');
+        if ( is_admin() && $is_settings_page ) {
             wp_enqueue_script('jquery-ui-sortable');
             wp_enqueue_script('jquery-ui-draggable');
             wp_enqueue_script(
@@ -172,7 +166,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
             'ID'          => $post_id,
             'post_title'  => $arr['title'],
             'name'        => $arr['name'],
-            'post_type'   => 'vta_order_status',
+            'post_type'   => $this->post_type,
             'post_status' => 'publish',
         ];
         $post_id   = wp_insert_post($post_args);
@@ -189,7 +183,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
     /**
      * Sets up Custom Post Type for custom order status management.
      */
-    static public function register_custom_order_statuses() {
+    public function register_custom_order_statuses() {
         // labels for Custom Order Status (custom post)
         $labels = array(
             'name'               => __('Custom Order Statuses', 'vta-wc-custom-order-status'),
@@ -206,7 +200,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
 
         // create custom post type of "Custom Order Status"
         register_post_type(
-            'vta_order_status',
+            $this->post_type,
             array(
                 'labels'       => $labels,
                 'public'       => false,
@@ -226,7 +220,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
     public function customize_edit_screen(): void {
         // remove certain post type elements from "Custom Order Status" post types
         // (we can set also, but we want to customize every input from post-new.php)
-        remove_post_type_support('vta_order_status', 'editor');
+        remove_post_type_support($this->post_type, 'editor');
 
 //        add_action('add_meta_box', ['Vta_Wc_Custom_Order_Status_Admin', 'add_meta_boxes']);
         self::replace_title_placeholder();
@@ -250,7 +244,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
             'cos-color-picker',
             'Order Status Color Code',
             [ Vta_Wc_Custom_Order_Status_Admin::class, 'render_input_color_picker' ],
-            'vta_order_status', // 'vta_custom_order'
+            $this->post_type, // 'vta_custom_order'
             'normal',
             'high'
         );
@@ -259,7 +253,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
             'cos-reorderable-checkbox',
             'Reorder for this Status',
             [ Vta_Wc_Custom_Order_Status_Admin::class, 'render_reorderable_checkox' ],
-            'vta_order_status', // 'vta_custom_order'
+            $this->post_type, // 'vta_custom_order'
             'normal',
             'high'
         );
@@ -304,10 +298,12 @@ class Vta_Wc_Custom_Order_Status_Admin {
      */
     public function settings_api_init() {
 
+        $options = get_option($this->settings_name);
+
         // Register new page in Custom Order Status Plugin
         register_setting(
-            'vta_order_status_settings',
-            'vta_order_status_options'
+            $this->settings_page,
+            $this->settings_name
         );
 
         // Settings section
@@ -315,7 +311,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
             'vta_cos_order_status',
             'Settings',
             [ $this, 'render_settings_section' ],
-            'vta_order_status_settings_fields',
+            $this->settings_field,
         );
 
         // arrangement Field
@@ -323,11 +319,11 @@ class Vta_Wc_Custom_Order_Status_Admin {
             'vta_cos_order_field',
             'Order of "Order Status"',
             [ $this, 'render_settings_order_field' ],
-            'vta_order_status_settings_fields',
+            $this->settings_field,
             'vta_cos_order_status',
             [
-                'label_for' => '',
-                'class'     => 'vta-cos-settings-row'
+                'label_for'                => 'order_status_arrangement',
+                'order_status_arrangement' => $options['order_status_arrangement']
             ]
         );
 
@@ -335,8 +331,8 @@ class Vta_Wc_Custom_Order_Status_Admin {
         add_settings_field(
             'vta_cos_new_order_status_field',
             'New Order Statuses',
-            [ $this, 'render_settings_order_field' ],
-            'vta_order_status_settings_fields',
+            [ $this, 'render_new_order_status_field' ],
+            $this->settings_field,
             'vta_cos_order_status',
             [
                 'label_for' => '',
@@ -345,7 +341,11 @@ class Vta_Wc_Custom_Order_Status_Admin {
         );
     }
 
-    public function render_settings_page() {
+    /**
+     * Renders the entire
+     * @return void
+     */
+    public function render_settings_page(): void {
         include_once 'views/settings-page.php';
     }
 
@@ -354,7 +354,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
      * NOTE: Section HTML precedes settings fields.
      * @return void
      */
-    public function render_settings_section() {
+    public function render_settings_section(): void {
         ?>
         <p>These settings apply to all "Custom Order Statuses" as a whole.</p>
         <?php
@@ -362,17 +362,45 @@ class Vta_Wc_Custom_Order_Status_Admin {
 
     /**
      * Form field for settings arrangement (order) of Custom Order Statuses
+     * NOTE: "order_status_arrangement" value should be a JSON encoded string
+     * @param array $args
      * @return void
      */
-    public function render_settings_order_field() {
-        include_once 'views/partials/settings/order-field.php';
+    public function render_settings_order_field( array $args ): void {
+        $label_for = esc_attr($args['label_for']);
+        $name      = "$this->settings_name[$label_for]";
+        $value     = $args['order_status_arrangement'];
+        
+        $order_status_arrangement = json_decode($value);
+        ?>
+
+        <input type="hidden"
+               name="<?php echo $name; ?>"
+               value="<?php echo $value; ?>"
+               id="order_status_arrangement"
+        >
+        <ul id="statuses-sortable">
+            <?php foreach ( $order_status_arrangement as $order_status ): ?>
+
+                <li class="ui-state-default vta-order-status" id="<?php echo $order_status->order_status_id; ?>">
+                    <?php echo $order_status->order_status_name; ?>
+                </li>
+
+            <?php endforeach; ?>
+        </ul>
+        <p class="description">
+            Determines the order of the order statuses to display in the dropdown menu.
+        </p>
+
+        <?php
+
     }
 
     /**
      * Form field for settings
      * @return void
      */
-    public function render_new_order_status_field() {
+    public function render_new_order_status_field(): void {
         include_once 'views/partials/settings/new-order-field.php';
     }
 }

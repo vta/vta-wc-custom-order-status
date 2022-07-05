@@ -7,9 +7,11 @@
 ?>
 <h1>Test settings page</h1>
 
-<?php
-// Settings Form Fields
-settings_fields('vta_order_status_settings');
-do_settings_sections('vta_order_status_settings_fields');
-submit_button('Save');
-?>
+<form action="options.php" method="post">
+    <?php
+    // Settings Form Fields
+    settings_fields('vta_order_status_settings');
+    do_settings_sections('vta_order_status_settings_fields');
+    submit_button('Save');
+    ?>
+</form>

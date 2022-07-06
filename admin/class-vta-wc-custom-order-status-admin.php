@@ -72,12 +72,10 @@ class Vta_Wc_Custom_Order_Status_Admin {
 
     /**
      * Gets default OR current order statuses from WC and creates|update posts.
+     * Used during plugin activation.
      * @return void
-     * TODO - move into a different class in the future
      */
     public function sync_default_statuses(): void {
-
-        error_log('running "sync_default_statuses"');
 
         $default_colors = [
             'wc-received'   => '#EE360F',
@@ -102,10 +100,14 @@ class Vta_Wc_Custom_Order_Status_Admin {
             ];
             $this->save_order_status($arr);
         }
+
+        // We should sync settings after setting default Statuses
+        $this->sync_settings();
     }
 
     /**
-     * Saves WC order status to Post Type
+     * Saves WC Order Status to a Custom Post. Updates the Post if it already exists.
+     * NOTE: Search is based on title (Order Status Name)
      * @param array $arr
      * @return void
      * @throws InvalidArgumentException
@@ -271,8 +273,6 @@ class Vta_Wc_Custom_Order_Status_Admin {
      */
     public function settings_api_init() {
 
-        $this->sync_settings();
-
         $options = get_option($this->settings_name);
 
         // Register new page in Custom Order Status Plugin
@@ -431,5 +431,14 @@ class Vta_Wc_Custom_Order_Status_Admin {
 
             update_option($this->settings_name, $options);
         }
+    }
+
+    // GETTERS //
+
+    /**
+     * @return string
+     */
+    public function get_post_type(): string {
+        return $this->post_type;
     }
 }

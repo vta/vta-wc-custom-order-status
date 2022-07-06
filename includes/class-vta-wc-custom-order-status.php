@@ -72,7 +72,7 @@ class Vta_Wc_Custom_Order_Status {
         } else {
             $this->version = '1.0.0';
         }
-        $this->plugin_name = 'vta-wc-custom-order-status';
+        $this->plugin_name = VTA_WC_COS_PLUGIN_NAME;
 
         $this->load_dependencies();
         $this->set_locale();

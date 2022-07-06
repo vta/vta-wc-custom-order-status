@@ -29,8 +29,8 @@ require_once 'admin/class-vta-wc-custom-order-status-admin.php';
 require_once 'utils/common.php';
 
 // If this file is called directly, abort.
-if ( ! defined( 'WPINC' ) ) {
-	die;
+if ( !defined('WPINC') ) {
+    die;
 }
 
 /**
@@ -38,15 +38,16 @@ if ( ! defined( 'WPINC' ) ) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define( 'VTA_WC_CUSTOM_ORDER_STATUS_VERSION', '1.0.0' );
+const VTA_WC_CUSTOM_ORDER_STATUS_VERSION = '1.0.0';
+const VTA_WC_COS_PLUGIN_NAME             = 'vta-wc-custom-order-status';
 
 /**
  * The code that runs during plugin activation.
  * This action is documented in includes/class-vta-wc-custom-order-status-activator.php
  */
 function activate_vta_wc_custom_order_status(): void {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-vta-wc-custom-order-status-activator.php';
-	Vta_Wc_Custom_Order_Status_Activator::activate();
+    require_once plugin_dir_path(__FILE__) . 'includes/class-vta-wc-custom-order-status-activator.php';
+    Vta_Wc_Custom_Order_Status_Activator::activate();
 }
 
 /**
@@ -54,18 +55,18 @@ function activate_vta_wc_custom_order_status(): void {
  * This action is documented in includes/class-vta-wc-custom-order-status-deactivator.php
  */
 function deactivate_vta_wc_custom_order_status(): void {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-vta-wc-custom-order-status-deactivator.php';
-	Vta_Wc_Custom_Order_Status_Deactivator::deactivate();
+    require_once plugin_dir_path(__FILE__) . 'includes/class-vta-wc-custom-order-status-deactivator.php';
+    Vta_Wc_Custom_Order_Status_Deactivator::deactivate();
 }
 
-register_activation_hook( __FILE__, 'activate_vta_wc_custom_order_status' );
-register_deactivation_hook( __FILE__, 'deactivate_vta_wc_custom_order_status' );
+register_activation_hook(__FILE__, 'activate_vta_wc_custom_order_status');
+register_deactivation_hook(__FILE__, 'deactivate_vta_wc_custom_order_status');
 
 /**
  * The core plugin class that is used to define internationalization,
  * admin-specific hooks, and public-facing site hooks.
  */
-require plugin_dir_path( __FILE__ ) . 'includes/class-vta-wc-custom-order-status.php';
+require plugin_dir_path(__FILE__) . 'includes/class-vta-wc-custom-order-status.php';
 
 /**
  * Begins execution of the plugin.
@@ -77,9 +78,8 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-vta-wc-custom-order-status
  * @since    1.0.0
  */
 function run_vta_wc_custom_order_status(): void {
-	$plugin = new Vta_Wc_Custom_Order_Status();
-	$plugin->run();
-
+    $plugin = new Vta_Wc_Custom_Order_Status();
+    $plugin->run();
 }
 
 run_vta_wc_custom_order_status();

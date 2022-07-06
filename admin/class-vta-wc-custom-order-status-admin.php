@@ -38,11 +38,8 @@ class Vta_Wc_Custom_Order_Status_Admin {
      * @param string $version The version of this plugin.
      */
     public function __construct( string $plugin_name, string $version ) {
-
         $this->plugin_name = $plugin_name;
         $this->version     = $version;
-//        $this->sync_default_statuses(); // TODO - move to activate()...
-
     }
 
     /**
@@ -331,9 +328,29 @@ class Vta_Wc_Custom_Order_Status_Admin {
      * @return void
      */
     public function render_settings_section(): void {
+        $this->display_setting_msg();
+
         ?>
         <p>These settings apply to all "Custom Order Statuses" as a whole.</p>
         <?php
+    }
+
+    /**
+     * Checks if error message is store in settings. Currently it only displays success message.
+     * @return void
+     */
+    private function display_setting_msg(): void {
+        if ( isset($_GET['settings-updated']) ) {
+            add_settings_error(
+                "{$this->settings_name}_messages",
+                "{$this->settings_name}_message_success",
+                'Settings Saved',
+                'updated'
+            );
+
+            // show error/update messages
+            settings_errors("{$this->settings_name}_messages");
+        }
     }
 
     /**
@@ -378,6 +395,8 @@ class Vta_Wc_Custom_Order_Status_Admin {
      * @return void
      */
     public function render_default_order_status_field( array $args ): void {
+        $order_statuses = wc_get_order_statuses();
+
         $label_for = esc_attr($args['label_for']);
         $name      = "$this->settings_name[$label_for]";
         $value     = $args[$this->default_order_status_key];
@@ -393,7 +412,9 @@ class Vta_Wc_Custom_Order_Status_Admin {
             <?php foreach ( $order_status_arrangement as $order_status ): ?>
 
                 <option id="<?php echo $order_status->order_status_id; ?>"
-                        value="<?php echo $order_status->order_status_id; ?>">
+                        value="<?php echo $order_status->order_status_id; ?>"
+                        <?php echo $value === $order_status->order_status_id ? 'selected' : ''; ?>
+                >
                     <?php echo $order_status->order_status_name; ?>
                 </option>
 

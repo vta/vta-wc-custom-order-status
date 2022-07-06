@@ -22,22 +22,7 @@
  */
 class Vta_Wc_Custom_Order_Status_Admin {
 
-    /**
-     * The ID of this plugin.
-     *
-     * @since    1.0.0
-     * @access   private
-     * @var      string $plugin_name The ID of this plugin.
-     */
     private string $plugin_name;
-
-    /**
-     * The version of this plugin.
-     *
-     * @since    1.0.0
-     * @access   private
-     * @var      string $version The current version of this plugin.
-     */
     private string $version;
 
     private string $post_type                    = 'vta_order_status';
@@ -49,10 +34,8 @@ class Vta_Wc_Custom_Order_Status_Admin {
 
     /**
      * Initialize the class and set its properties.
-     *
      * @param string $plugin_name The name of this plugin.
      * @param string $version The version of this plugin.
-     * @since    1.0.0
      */
     public function __construct( string $plugin_name, string $version ) {
 
@@ -63,37 +46,17 @@ class Vta_Wc_Custom_Order_Status_Admin {
     }
 
     /**
-     * Register the stylesheets for the admin area.
-     *
-     * @since    1.0.0
-     */
-    public function enqueue_styles(): void {
-
-        /**
-         * This function is provided for demonstration purposes only.
-         *
-         * An instance of this class should be passed to the run() function
-         * defined in Vta_Wc_Custom_Order_Status_Loader as all of the hooks are defined
-         * in that particular class.
-         *
-         * The Vta_Wc_Custom_Order_Status_Loader will then create the relationship
-         * between the defined hooks and the functions defined in this
-         * class.
-         */
-
-        wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/vta-wc-custom-order-status-admin.css', array(), $this->version, 'all');
-
-    }
-
-    /**
-     * Register the JavaScript for the admin area.
-     *
-     * @since    1.0.0
+     * Register the CSS & JavaScript for the admin area.
+     * @return void
+     * @hooked admin_enqueue_scripts
      */
     public function enqueue_scripts(): void {
         list('query_params' => $query_params) = get_query_params();
-        $is_settings_page = in_array($this->post_type, $query_params) && in_array($this->settings_page, $query_params);
 
+        wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/vta-wc-custom-order-status-admin.css', array(), $this->version, 'all');
+
+        // Plugin Settings Page only
+        $is_settings_page = in_array($this->post_type, $query_params) && in_array($this->settings_page, $query_params);
         if ( is_admin() && $is_settings_page ) {
             wp_enqueue_script('jquery-ui-sortable');
             wp_enqueue_script('jquery-ui-draggable');
@@ -184,6 +147,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
 
     /**
      * Sets up Custom Post Type for custom order status management.
+     * @hooked init
      */
     public function register_custom_order_statuses() {
         // labels for Custom Order Status (custom post)
@@ -219,6 +183,11 @@ class Vta_Wc_Custom_Order_Status_Admin {
 
     // CUSTOM POST EDITOR FOR "CUSTOM ORDER STATUS" POST TYPES
 
+    /**
+     * Customizes Edit screen for Custom Order Status post page.
+     * @return void
+     * @hooked admin_init
+     */
     public function customize_edit_screen(): void {
         // remove certain post type elements from "Custom Order Status" post types
         // (we can set also, but we want to customize every input from post-new.php)
@@ -282,6 +251,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
     /**
      * Add Settings page under "Custom Order Statuses" menu
      * @return void
+     * @hooked admin_menu
      */
     public function register_options_page() {
         add_submenu_page(
@@ -297,6 +267,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
     /**
      * Initialize Settings page for plugin & settings sections/fields
      * @return void
+     * @hooked admin_init
      */
     public function settings_api_init() {
 

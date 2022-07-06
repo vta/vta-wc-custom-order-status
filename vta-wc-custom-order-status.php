@@ -44,7 +44,7 @@ define( 'VTA_WC_CUSTOM_ORDER_STATUS_VERSION', '1.0.0' );
  * The code that runs during plugin activation.
  * This action is documented in includes/class-vta-wc-custom-order-status-activator.php
  */
-function activate_vta_wc_custom_order_status() {
+function activate_vta_wc_custom_order_status(): void {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-vta-wc-custom-order-status-activator.php';
 	Vta_Wc_Custom_Order_Status_Activator::activate();
 }
@@ -53,7 +53,7 @@ function activate_vta_wc_custom_order_status() {
  * The code that runs during plugin deactivation.
  * This action is documented in includes/class-vta-wc-custom-order-status-deactivator.php
  */
-function deactivate_vta_wc_custom_order_status() {
+function deactivate_vta_wc_custom_order_status(): void {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/class-vta-wc-custom-order-status-deactivator.php';
 	Vta_Wc_Custom_Order_Status_Deactivator::deactivate();
 }
@@ -76,7 +76,7 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-vta-wc-custom-order-status
  *
  * @since    1.0.0
  */
-function run_vta_wc_custom_order_status() {
+function run_vta_wc_custom_order_status(): void {
 	$plugin = new Vta_Wc_Custom_Order_Status();
 	$plugin->run();
 

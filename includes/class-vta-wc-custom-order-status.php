@@ -37,7 +37,7 @@ class Vta_Wc_Custom_Order_Status {
      * @access   protected
      * @var      Vta_Wc_Custom_Order_Status_Loader $loader Maintains and registers all hooks for the plugin.
      */
-    protected $loader;
+    protected Vta_Wc_Custom_Order_Status_Loader $loader;
 
     /**
      * The unique identifier of this plugin.
@@ -46,7 +46,7 @@ class Vta_Wc_Custom_Order_Status {
      * @access   protected
      * @var      string $plugin_name The string used to uniquely identify this plugin.
      */
-    protected $plugin_name;
+    protected string $plugin_name;
 
     /**
      * The current version of the plugin.
@@ -55,7 +55,7 @@ class Vta_Wc_Custom_Order_Status {
      * @access   protected
      * @var      string $version The current version of the plugin.
      */
-    protected $version;
+    protected string $version;
 
     /**
      * Define the core functionality of the plugin.
@@ -97,7 +97,7 @@ class Vta_Wc_Custom_Order_Status {
      * @since    1.0.0
      * @access   private
      */
-    private function load_dependencies() {
+    private function load_dependencies(): void {
 
         /**
          * The class responsible for orchestrating the actions and filters of the
@@ -135,7 +135,7 @@ class Vta_Wc_Custom_Order_Status {
      * @since    1.0.0
      * @access   private
      */
-    private function set_locale() {
+    private function set_locale(): void {
 
         $plugin_i18n = new Vta_Wc_Custom_Order_Status_i18n();
 
@@ -149,18 +149,17 @@ class Vta_Wc_Custom_Order_Status {
      * @since    1.0.0
      * @access   private
      */
-    private function define_admin_hooks() {
+    private function define_admin_hooks(): void {
 
         $plugin_admin = new Vta_Wc_Custom_Order_Status_Admin($this->get_plugin_name(), $this->get_version());
 
-		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
-		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
+        $this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts');
 //		$this->loader->add_action( 'add_meta_boxes', $plugin_admin, 'custom_order_add_inputs' );
 //      $this->loader->add_action( 'add_meta_boxes', $plugin_admin, 'custom_order_add_inputs' );
         $this->loader->add_action('init', $plugin_admin, 'register_custom_order_statuses');
         $this->loader->add_action('admin_init', $plugin_admin, 'customize_edit_screen');
         $this->loader->add_action('admin_init', $plugin_admin, 'settings_api_init');
-        $this->loader->add_action( 'admin_menu', $plugin_admin , 'register_options_page' );
+        $this->loader->add_action('admin_menu', $plugin_admin, 'register_options_page');
 
     }
 
@@ -171,7 +170,7 @@ class Vta_Wc_Custom_Order_Status {
      * @since    1.0.0
      * @access   private
      */
-    private function define_public_hooks() {
+    private function define_public_hooks(): void {
 
         $plugin_public = new Vta_Wc_Custom_Order_Status_Public($this->get_plugin_name(), $this->get_version());
 
@@ -185,7 +184,7 @@ class Vta_Wc_Custom_Order_Status {
      *
      * @since    1.0.0
      */
-    public function run() {
+    public function run(): void {
         $this->loader->run();
     }
 
@@ -196,7 +195,7 @@ class Vta_Wc_Custom_Order_Status {
      * @return    string    The name of the plugin.
      * @since     1.0.0
      */
-    public function get_plugin_name() {
+    public function get_plugin_name(): string {
         return $this->plugin_name;
     }
 
@@ -206,7 +205,7 @@ class Vta_Wc_Custom_Order_Status {
      * @return    Vta_Wc_Custom_Order_Status_Loader    Orchestrates the hooks of the plugin.
      * @since     1.0.0
      */
-    public function get_loader() {
+    public function get_loader(): Vta_Wc_Custom_Order_Status_Loader {
         return $this->loader;
     }
 
@@ -216,7 +215,7 @@ class Vta_Wc_Custom_Order_Status {
      * @return    string    The version number of the plugin.
      * @since     1.0.0
      */
-    public function get_version() {
+    public function get_version(): string {
         return $this->version;
     }
 

@@ -5,8 +5,6 @@
  * @description top level settings for custom Plugin
  */
 ?>
-<h1>Test settings page</h1>
-
 <form action="options.php" method="post">
     <?php
     // Settings Form Fields

@@ -55,10 +55,17 @@ class Vta_Wc_Custom_Order_Status_Admin {
         // Plugin Settings Page only
         $is_settings_page = in_array($this->post_type, $query_params) && in_array($this->settings_page, $query_params);
         if ( is_admin() && $is_settings_page ) {
+            wp_enqueue_style(
+                "{$this->plugin_name}_settings_css",
+                plugin_dir_url(__FILE__) . 'css/settings.css',
+                [],
+                $this->version
+            );
+
             wp_enqueue_script('jquery-ui-sortable');
             wp_enqueue_script('jquery-ui-draggable');
             wp_enqueue_script(
-                $this->plugin_name,
+                "{$this->plugin_name}_settings_js",
                 plugin_dir_url(__FILE__) . 'js/settings.js',
                 [ 'jquery', 'jquery-ui-sortable', 'jquery-ui-draggable' ],
                 $this->version,
@@ -295,6 +302,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
             'vta_cos_order_status',
             [
                 'label_for'                         => $this->order_status_arrangement_key,
+                $this->default_order_status_key     => $options[$this->default_order_status_key] ?? null,
                 $this->order_status_arrangement_key => $options[$this->order_status_arrangement_key] ?? '[]'
             ]
         );
@@ -360,9 +368,10 @@ class Vta_Wc_Custom_Order_Status_Admin {
      * @return void
      */
     public function render_order_arrangement_field( array $args ): void {
-        $label_for = esc_attr($args['label_for']);
-        $name      = "$this->settings_name[$label_for]";
-        $value     = $args[$this->order_status_arrangement_key];
+        $label_for                = esc_attr($args['label_for']);
+        $name                     = "$this->settings_name[$label_for]";
+        $value                    = $args[$this->order_status_arrangement_key];
+        $default_order_status_key = $args[$this->default_order_status_key];
 
         $order_status_arrangement = json_decode($value);
         ?>
@@ -373,10 +382,15 @@ class Vta_Wc_Custom_Order_Status_Admin {
                value="<?php echo $value; ?>"
         >
         <ul id="statuses-sortable">
-            <?php foreach ( $order_status_arrangement as $order_status ): ?>
+            <?php foreach ( $order_status_arrangement as $order_status ):
+                $is_default = $default_order_status_key === $order_status->order_status_id;
+                ?>
 
-                <li class="ui-state-default vta-order-status" id="<?php echo $order_status->order_status_id; ?>">
+                <li class="ui-state-default vta-order-status draggable <?php echo $is_default ? 'default-status' : ''; ?>"
+                    id="<?php echo $order_status->order_status_id; ?>">
                     <?php echo $order_status->order_status_name; ?>
+                    <?php echo $is_default ? "(Default Status)" : ''; ?>
+                    <span class="dashicons dashicons-sort"></span>
                 </li>
 
             <?php endforeach; ?>
@@ -395,8 +409,6 @@ class Vta_Wc_Custom_Order_Status_Admin {
      * @return void
      */
     public function render_default_order_status_field( array $args ): void {
-        $order_statuses = wc_get_order_statuses();
-
         $label_for = esc_attr($args['label_for']);
         $name      = "$this->settings_name[$label_for]";
         $value     = $args[$this->default_order_status_key];
@@ -413,13 +425,17 @@ class Vta_Wc_Custom_Order_Status_Admin {
 
                 <option id="<?php echo $order_status->order_status_id; ?>"
                         value="<?php echo $order_status->order_status_id; ?>"
-                        <?php echo $value === $order_status->order_status_id ? 'selected' : ''; ?>
+                    <?php echo $value === $order_status->order_status_id ? 'selected' : ''; ?>
                 >
                     <?php echo $order_status->order_status_name; ?>
                 </option>
 
             <?php endforeach; ?>
         </select>
+
+        <p class="description">
+            This is the first order status to display when a customer requests a new order.
+        </p>
 
         <?php
     }

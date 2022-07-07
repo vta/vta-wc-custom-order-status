@@ -192,7 +192,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
      * Deletes all plugin settings and custom posts
      * @return void
      */
-    private function delete_posts_settings(): void {
+    public function delete_posts_settings(): void {
         $args     = [
             'post_status'    => 'any',
             'post_type'      => 'vta_order_status',

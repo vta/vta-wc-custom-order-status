@@ -1,0 +1,35 @@
+/* Draggable li */
+ul#statuses-sortable > li.vta-order-status.draggable {
+    background: #fff;
+    margin: 0;
+    padding: 1em;
+    box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.2);
+    transition: border 200ms linear, box-shadow 200ms linear;
+    position: relative;
+    font-size: 1.1em;
+    max-width: 500px;
+}
+
+ul#statuses-sortable > li.vta-order-status.draggable.default-status {
+    font-weight: 500;
+    color: #0a5b88;
+}
+
+ul#statuses-sortable > li.vta-order-status.draggable:hover {
+    cursor: grab;
+}
+
+/* Item that's being dragged*/
+ul#statuses-sortable > li.vta-order-status.draggable.ui-sortable-helper {
+    border: 1px solid #d3d3d3;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+    transition: border 200ms linear, box-shadow 200ms linear;
+    cursor: grabbing;
+}
+
+span.dashicons-sort {
+    position: absolute;
+    right: 1em;
+    color: #0a6aa1;
+}
+

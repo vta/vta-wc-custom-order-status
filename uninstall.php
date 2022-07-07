@@ -29,3 +29,17 @@
 if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	exit;
 }
+
+$args     = [
+    'post_status'    => 'any',
+    'post_type'      => 'vta_order_status',
+    'posts_per_page' => -1
+];
+$wp_query = new WP_Query($args);
+$posts    = $wp_query->get_posts();
+
+foreach ( $posts as $post ) {
+    wp_delete_post(is_int($post) ? $post : $post->ID);
+}
+
+delete_option('vta_order_status_options');

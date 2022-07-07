@@ -168,7 +168,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
 
         if ( $post_id ) {
             update_post_meta($post_id, self::META_COLOR_KEY, $arr[self::META_COLOR_KEY] ?? '#7D7D7D');
-            update_post_meta($post_id, $this->meta_reorderable_key, $arr[$this->meta_reorderable_key] ?? false);
+            update_post_meta($post_id, self::META_REORDERABLE_KEY, $arr[self::META_REORDERABLE_KEY] ?? false);
         }
 
     }
@@ -298,7 +298,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
         $order_status_key = $is_edit && $post instanceof WP_Post ? $post->post_name : '';
         $post_id          = $is_edit && $post instanceof WP_Post ? $post->ID : null;
         $color            = $is_edit ? get_post_meta($post_id, self::META_COLOR_KEY, true) : '#000000';
-        $reorderable      = $is_edit ? get_post_meta($post_id, $this->meta_reorderable_key, true) : false;
+        $reorderable      = $is_edit ? get_post_meta($post_id, self::META_REORDERABLE_KEY, true) : false;
         ?>
 
         <table id="edit-custom-attr">
@@ -363,20 +363,14 @@ class Vta_Wc_Custom_Order_Status_Admin {
      * @hooked 'save_post_vta_order_status'
      */
     public function save_postdata( int $post_id ) {
-        // Order Status Key
-        if ( array_key_exists('', $_POST) ) {
-
+        // Order Status Color
+        if ( array_key_exists(self::META_COLOR_KEY, $_POST) ) {
+            update_post_meta($post_id, self::META_COLOR_KEY, $_POST[self::META_COLOR_KEY]);
         }
 
-        // Order Status Key
-        if ( array_key_exists('', $_POST) ) {
-
-        }
-
-        // Order Status Is Reorderable
-        if ( array_key_exists('', $_POST) ) {
-
-        }
+        // Order Status "Is Reorderable"
+        $is_reorderable = $_POST[self::META_REORDERABLE_KEY] ?? false;
+        update_post_meta($post_id, self::META_REORDERABLE_KEY, (bool)$is_reorderable);
     }
 
     // CUSTOM SETTINGS API

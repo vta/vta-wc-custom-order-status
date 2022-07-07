@@ -154,8 +154,6 @@ class Vta_Wc_Custom_Order_Status {
         $plugin_admin = new Vta_Wc_Custom_Order_Status_Admin($this->get_plugin_name(), $this->get_version());
 
         $this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts');
-//		$this->loader->add_action( 'add_meta_boxes', $plugin_admin, 'custom_order_add_inputs' );
-//      $this->loader->add_action( 'add_meta_boxes', $plugin_admin, 'custom_order_add_inputs' );
         $this->loader->add_action('init', $plugin_admin, 'register_custom_order_statuses');
         $this->loader->add_action('admin_init', $plugin_admin, 'customize_edit_screen');
         $this->loader->add_action('admin_init', $plugin_admin, 'settings_api_init');

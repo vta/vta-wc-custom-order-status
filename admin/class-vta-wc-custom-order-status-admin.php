@@ -387,7 +387,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
                 ?>
 
                 <li class="ui-state-default vta-order-status draggable <?php echo $is_default ? 'default-status' : ''; ?>"
-                    id="<?php echo $order_status->order_status_id; ?>">
+                    id="<?php echo $order_status->order_status_id; ?>" data-name="<?php echo $order_status->order_status_name; ?>">
                     <?php echo $order_status->order_status_name; ?>
                     <?php echo $is_default ? "(Default Status)" : ''; ?>
                     <span class="dashicons dashicons-sort"></span>

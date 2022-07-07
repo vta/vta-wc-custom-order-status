@@ -25,7 +25,10 @@ class Vta_Wc_Custom_Order_Status_Admin {
     private string $plugin_name;
     private string $version;
 
-    private string $post_type                    = 'vta_order_status';
+    const POST_TYPE = 'vta_order_status';
+    const META_COLOR_KEY = 'vta_cos_color';
+    const META_REORDERABLE_KEY = 'vta_cos_is_reorderable';
+
     private string $settings_name                = 'vta_order_status_options';
     private string $default_order_status_key     = 'order_status_default';
     private string $order_status_arrangement_key = 'order_status_arrangement';
@@ -54,7 +57,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
         wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/vta-wc-custom-order-status-admin.css', array(), $this->version, 'all');
 
         // Plugin Settings Page only
-        $is_settings_page = in_array($this->post_type, $query_params) && in_array($this->settings_page, $query_params);
+        $is_settings_page = in_array(self::POST_TYPE, $query_params) && in_array($this->settings_page, $query_params);
         if ( is_admin() && $is_settings_page ) {
             wp_enqueue_style(
                 "{$this->plugin_name}_settings_css",
@@ -75,8 +78,8 @@ class Vta_Wc_Custom_Order_Status_Admin {
         }
 
         // New/Edit Post page
-        $is_new_post_page  = preg_match('/post-new\.php/', $path) || in_array($this->post_type, $query_params);
-        $is_edit_post_page = preg_match('/post\.php/', $path) && $post instanceof WP_Post && $post->post_type === $this->post_type;
+        $is_new_post_page  = preg_match('/post-new\.php/', $path) || in_array(self::POST_TYPE, $query_params);
+        $is_edit_post_page = preg_match('/post\.php/', $path) && $post instanceof WP_Post && $post->post_type === self::POST_TYPE;
         $is_post_page      = $is_new_post_page || $is_edit_post_page;
         if ( is_admin() && $is_post_page ) {
             wp_enqueue_style(
@@ -119,9 +122,9 @@ class Vta_Wc_Custom_Order_Status_Admin {
         // package arguments into array to convert to POST
         foreach ( $default_statuses as $order_status_key => $order_status_val ) {
             $arr = [
-                'name'          => $order_status_key,
-                'title'         => $order_status_val,
-                'vta_cos_color' => $default_colors[$order_status_key] ?? '#7D7D7D'
+                'name'               => $order_status_key,
+                'title'              => $order_status_val,
+                self::META_COLOR_KEY => $default_colors[$order_status_key] ?? '#7D7D7D'
             ];
             $this->save_order_status($arr);
         }
@@ -139,10 +142,10 @@ class Vta_Wc_Custom_Order_Status_Admin {
      */
     private function save_order_status(
         array $arr = [
-            'name'                   => '',
-            'title'                  => '',
-            'vta_cos_color'          => '#7D7D7D',
-            'vta_cos_is_reorderable' => false,
+            'name'                     => '',
+            'title'                    => '',
+            self::META_COLOR_KEY       => '#7D7D7D',
+            self::META_REORDERABLE_KEY => false,
         ]
     ): void {
 
@@ -158,14 +161,14 @@ class Vta_Wc_Custom_Order_Status_Admin {
             'ID'          => $post_id,
             'post_title'  => $arr['title'],
             'name'        => $arr['name'],
-            'post_type'   => $this->post_type,
+            'post_type'   => self::POST_TYPE,
             'post_status' => 'publish',
         ];
         $post_id   = wp_insert_post($post_args);
 
         if ( $post_id ) {
-            update_post_meta($post_id, 'vta_cos_color', $arr['vta_cos_color'] ?? '#7D7D7D');
-            update_post_meta($post_id, 'vta_cos_is_reorderable', $arr['vta_cos_is_reorderable'] ?? false);
+            update_post_meta($post_id, self::META_COLOR_KEY, $arr[self::META_COLOR_KEY] ?? '#7D7D7D');
+            update_post_meta($post_id, $this->meta_reorderable_key, $arr[$this->meta_reorderable_key] ?? false);
         }
 
     }
@@ -182,7 +185,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
         $this->sync_default_statuses();
 
         status_header(200);
-        wp_redirect("/wp-admin/edit.php?post_type=$this->post_type&page=$this->settings_page");
+        wp_redirect("/wp-admin/edit.php?post_type=self::self::POST_TYPE&page=$this->settings_page");
     }
 
     /**
@@ -226,7 +229,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
 
         // create custom post type of "Custom Order Status"
         register_post_type(
-            $this->post_type,
+            self::POST_TYPE,
             [
                 'labels'       => $labels,
                 'public'       => false,
@@ -251,7 +254,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
     public function customize_edit_screen(): void {
         // remove certain post type elements from "Custom Order Status" post types
         // (we can set also, but we want to customize every input from post-new.php)
-        remove_post_type_support($this->post_type, 'editor');
+        remove_post_type_support(self::POST_TYPE, 'editor');
 
         $this->replace_title_placeholder();
         $this->add_meta_boxes();
@@ -273,8 +276,8 @@ class Vta_Wc_Custom_Order_Status_Admin {
         add_meta_box(
             'cos-custom-attributes',
             'Order Status Custom Attributes',
-            [ Vta_Wc_Custom_Order_Status_Admin::class, 'render_edit_meta_fields' ],
-            $this->post_type, // 'vta_order_status'
+            [ $this, 'render_edit_meta_fields' ],
+            self::POST_TYPE, // 'vta_order_status'
             'normal',
             'high'
         );
@@ -284,7 +287,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
      * UI for users to determine custom Order Status attributes.
      * @return void
      */
-    static public function render_edit_meta_fields(): void {
+    public function render_edit_meta_fields(): void {
         /** @var WP_Post | null $post */
         global $post;
 
@@ -294,8 +297,8 @@ class Vta_Wc_Custom_Order_Status_Admin {
 
         $order_status_key = $is_edit && $post instanceof WP_Post ? $post->post_name : '';
         $post_id          = $is_edit && $post instanceof WP_Post ? $post->ID : null;
-        $color            = $is_edit ? get_post_meta($post_id, 'vta_cos_color', true) : '#000000';
-        $reorderable      = $is_edit ? get_post_meta($post_id, 'vta_cos_is_reorderable', true) : false;
+        $color            = $is_edit ? get_post_meta($post_id, self::META_COLOR_KEY, true) : '#000000';
+        $reorderable      = $is_edit ? get_post_meta($post_id, $this->meta_reorderable_key, true) : false;
         ?>
 
         <table id="edit-custom-attr">
@@ -304,7 +307,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
                     <label for="order-status-id">Order Status Key</label>
                 </td>
                 <td>
-                    <input type="text" name="order-status-id" value="<?php echo $order_status_key; ?>">
+                    <input type="text" name="order_status_id" value="<?php echo $order_status_key; ?>">
                     <p class="description warning">
                         Do not update this if in doubt. This may cause a lot of downstream issues with current orders.
                     </p>
@@ -320,7 +323,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
                                id="color-picker"
                                title="Custom Order Status Color Picker"
                                value="<?php echo $color; ?>"
-                               name="meta-cos-color"
+                               name="vta_cos_color"
                                required
                         >
                         <button id="color-reset" class="button-small button-link-delete">
@@ -340,7 +343,8 @@ class Vta_Wc_Custom_Order_Status_Admin {
                     <label for="reorderable-checkbox">Is Reordable?</label>
                 </td>
                 <td>
-                    <input type="checkbox" id="reorderable-checkbox" <?php echo $reorderable ? 'checked' : '' ?>>
+                    <input type="checkbox" id="reorderable-checkbox"
+                           name="vta_cos_is_reorderable" <?php echo $reorderable ? 'checked' : '' ?>>
                     <label for="reorderable-checkbox"> Yes</label>
                     <p class="description">
                         Allow customs to re-order at this order status.
@@ -350,6 +354,29 @@ class Vta_Wc_Custom_Order_Status_Admin {
         </table>
 
         <?php
+    }
+
+    /**
+     * Adds custom attribute to our Order Status for new/editted posts.
+     * @param int $post_id
+     * @return void
+     * @hooked 'save_post_vta_order_status'
+     */
+    public function save_postdata( int $post_id ) {
+        // Order Status Key
+        if ( array_key_exists('', $_POST) ) {
+
+        }
+
+        // Order Status Key
+        if ( array_key_exists('', $_POST) ) {
+
+        }
+
+        // Order Status Is Reorderable
+        if ( array_key_exists('', $_POST) ) {
+
+        }
     }
 
     // CUSTOM SETTINGS API
@@ -551,7 +578,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
         if ( empty($options) || empty($options[$this->default_order_status_key] ?? null) ) {
             $args           = [
                 'post_status' => 'publish',
-                'post_type'   => $this->post_type,
+                'post_type'   => self::POST_TYPE,
             ];
             $wp_query       = new WP_Query($args);
             $order_statuses = $wp_query->get_posts();
@@ -577,6 +604,6 @@ class Vta_Wc_Custom_Order_Status_Admin {
      * @return string
      */
     public function get_post_type(): string {
-        return $this->post_type;
+        return self::POST_TYPE;
     }
 }

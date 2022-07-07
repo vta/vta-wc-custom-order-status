@@ -160,6 +160,7 @@ class Vta_Wc_Custom_Order_Status {
         $this->loader->add_action('admin_init', $plugin_admin, 'customize_edit_screen');
         $this->loader->add_action('admin_init', $plugin_admin, 'settings_api_init');
         $this->loader->add_action('admin_menu', $plugin_admin, 'register_options_page');
+        $this->loader->add_action('admin_post_default_settings', $plugin_admin, 'default_settings');
 
     }
 

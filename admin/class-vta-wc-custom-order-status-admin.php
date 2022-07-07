@@ -152,6 +152,39 @@ class Vta_Wc_Custom_Order_Status_Admin {
     // TODO - CONSIDERING MOVING EVERYTHING BELOW HERE INTO ITS OWN CLASS
 
     /**
+     * Deletes current settings and creates fresh posts & settings.
+     * @return void
+     * @hooked admin_post_default_settings
+     */
+    public function default_settings(): void {
+        $this->delete_posts_settings();
+        $this->sync_default_statuses();
+
+        status_header(200);
+        wp_redirect("/wp-admin/edit.php?post_type=$this->post_type&page=$this->settings_page");
+    }
+
+    /**
+     * Deletes all plugin settings and custom posts
+     * @return void
+     */
+    private function delete_posts_settings(): void {
+        $args     = [
+            'post_status'    => 'any',
+            'post_type'      => 'vta_order_status',
+            'posts_per_page' => -1
+        ];
+        $wp_query = new WP_Query($args);
+        $posts    = $wp_query->get_posts();
+
+        foreach ( $posts as $post ) {
+            wp_delete_post(is_int($post) ? $post : $post->ID);
+        }
+
+        delete_option('vta_order_status_options');
+    }
+
+    /**
      * Sets up Custom Post Type for custom order status management.
      * @hooked init
      */
@@ -387,7 +420,8 @@ class Vta_Wc_Custom_Order_Status_Admin {
                 ?>
 
                 <li class="ui-state-default vta-order-status draggable <?php echo $is_default ? 'default-status' : ''; ?>"
-                    id="<?php echo $order_status->order_status_id; ?>" data-name="<?php echo $order_status->order_status_name; ?>">
+                    id="<?php echo $order_status->order_status_id; ?>"
+                    data-name="<?php echo $order_status->order_status_name; ?>">
                     <?php echo $order_status->order_status_name; ?>
                     <?php echo $is_default ? "(Default Status)" : ''; ?>
                     <span class="dashicons dashicons-sort"></span>
@@ -463,7 +497,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
 
             $options = [
                 $this->order_status_arrangement_key => json_encode($order_statuses),
-                $this->default_order_status_key     => $order_statuses[0]->order_status_id ?? null,
+                $this->default_order_status_key     => $order_statuses[0]['order_status_id'] ?? null,
             ];
 
             update_option($this->settings_name, $options);

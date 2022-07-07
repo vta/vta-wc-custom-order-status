@@ -5,6 +5,8 @@
 
 (function ($) {
 
+    // Order Status Arrangement
+
     const sortable               = $('#statuses-sortable');
     const orderStatusArrangement = $('input#order_status_arrangement[type="hidden"]');
 
@@ -29,6 +31,11 @@
             orderStatusArr = JSON.stringify(returnStatusNameId());
             orderStatusArrangement.val(orderStatusArr);
         }
+    });
+
+    // Reset all custom order statuses & settings to default
+    $('form#reset-settings-form').submit(function () {
+        return confirm('Are you sure you want to reset all "Order Statuses" and plugin settings?')
     });
 
 })(jQuery);

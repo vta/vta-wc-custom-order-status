@@ -1,0 +1,11 @@
+table#edit-custom-attr tr > td {
+    padding: 0.5em 1em;
+}
+
+table#edit-custom-attr tr > td:first-of-type {
+    vertical-align: baseline !important;
+}
+
+span.required {
+    color: #ff0000;
+}

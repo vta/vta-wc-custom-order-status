@@ -48,6 +48,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
      * @hooked admin_enqueue_scripts
      */
     public function enqueue_scripts(): void {
+        global $post;
         list('query_params' => $query_params, 'path' => $path) = get_query_params();
 
         wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/vta-wc-custom-order-status-admin.css', array(), $this->version, 'all');
@@ -74,10 +75,16 @@ class Vta_Wc_Custom_Order_Status_Admin {
         }
 
         // New/Edit Post page
-        $is_post_page = in_array($this->post_type, $query_params) &&
-            (preg_match('/post-new\.php/', $path) || preg_match('/post\.php/', $path));
-
+        $is_new_post_page  = preg_match('/post-new\.php/', $path) || in_array($this->post_type, $query_params);
+        $is_edit_post_page = preg_match('/post\.php/', $path) && $post instanceof WP_Post && $post->post_type === $this->post_type;
+        $is_post_page      = $is_new_post_page || $is_edit_post_page;
         if ( is_admin() && $is_post_page ) {
+            wp_enqueue_style(
+                "{$this->plugin_name}_post_css",
+                plugin_dir_url(__FILE__) . 'css/post.css',
+                [],
+                $this->version
+            );
             wp_enqueue_script(
                 "{$this->plugin_name}_post_js",
                 plugin_dir_url(__FILE__) . 'js/post.js',
@@ -271,14 +278,6 @@ class Vta_Wc_Custom_Order_Status_Admin {
             'normal',
             'high'
         );
-//        add_meta_box(
-//            'cos-reorderable-checkbox',
-//            'Reorder for this Status',
-//            [ Vta_Wc_Custom_Order_Status_Admin::class, 'render_reorderable_checkox' ],
-//            $this->post_type, // 'vta_order_status'
-//            'normal',
-//            'high'
-//        );
     }
 
     /**
@@ -286,41 +285,51 @@ class Vta_Wc_Custom_Order_Status_Admin {
      * @return void
      */
     static public function render_edit_meta_fields(): void {
-        global $post_id;
+        /** @var WP_Post | null $post */
+        global $post;
 
-        /** @var WP_Post $post */
-        $post             = get_post($post_id);
-        $order_status_key = $post->post_name;
-        $color            = get_post_meta($post_id, 'vta_cos_color', true);
-        $reorderable      = get_post_meta($post_id, 'vta_cos_is_reorderable', true);
+        list('query_params' => $query_params) = get_query_params();
 
+        $is_edit = in_array('edit', $query_params);
+
+        $order_status_key = $is_edit && $post instanceof WP_Post ? $post->post_name : '';
+        $post_id          = $is_edit && $post instanceof WP_Post ? $post->ID : null;
+        $color            = $is_edit ? get_post_meta($post_id, 'vta_cos_color', true) : '#000000';
+        $reorderable      = $is_edit ? get_post_meta($post_id, 'vta_cos_is_reorderable', true) : false;
         ?>
 
         <table id="edit-custom-attr">
             <tr>
                 <td>
-                    <label for="order-status-id">Is Reordable? </label>
+                    <label for="order-status-id">Order Status Key</label>
                 </td>
                 <td>
                     <input type="text" name="order-status-id" value="<?php echo $order_status_key; ?>">
                     <p class="description warning">
-                        Do not change this if in doubt. This may cause a lot of downstream issues with current orders.
+                        Do not update this if in doubt. This may cause a lot of downstream issues with current orders.
                     </p>
                 </td>
             </tr>
             <tr>
                 <td>
-                    <label for="color-picker">Color</label>
+                    <label for="color-picker">Color <span class="required">*</span></label>
                 </td>
                 <td>
-                    <input type="color"
-                           id="color-picker"
-                           title="Custom Order Status Color Picker"
-                           value="<?php echo $color; ?>"
-                           name="meta-cos-color"
-                    >
-                    <strong id="color-val"><?php echo $color; ?></strong>
-                    <button id="color-reset" class="button-small button-link-delete">Reset</button>
+                    <div>
+                        <input type="color"
+                               id="color-picker"
+                               title="Custom Order Status Color Picker"
+                               value="<?php echo $color; ?>"
+                               name="meta-cos-color"
+                               required
+                        >
+                        <button id="color-reset" class="button-small button-link-delete">
+                            Reset
+                        </button>
+                    </div>
+                    <p>
+                        <strong id="color-val"><?php echo $color; ?></strong>
+                    </p>
                     <p class="description">
                         Custom color designation for the following order status.
                     </p>
@@ -332,6 +341,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
                 </td>
                 <td>
                     <input type="checkbox" id="reorderable-checkbox" <?php echo $reorderable ? 'checked' : '' ?>>
+                    <label for="reorderable-checkbox"> Yes</label>
                     <p class="description">
                         Allow customs to re-order at this order status.
                     </p>

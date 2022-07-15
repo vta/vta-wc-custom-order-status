@@ -35,6 +35,8 @@ class Vta_Wc_Custom_Order_Status_Admin {
     private string $settings_page                = 'vta_order_status_settings';
     private string $settings_field               = 'vta_order_status_settings_fields';
 
+    private string $save_post_hook = '';
+
     /**
      * Initialize the class and set its properties.
      * @param string $plugin_name The name of this plugin.
@@ -183,9 +185,10 @@ class Vta_Wc_Custom_Order_Status_Admin {
     public function default_settings(): void {
         $this->delete_posts_settings();
         $this->sync_default_statuses();
+        $post_type = $this->get_post_type();
 
         status_header(200);
-        wp_redirect("/wp-admin/edit.php?post_type=self::self::POST_TYPE&page=$this->settings_page");
+        wp_redirect("/wp-admin/edit.php?post_type={$post_type}&page=$this->settings_page");
     }
 
     /**
@@ -356,21 +359,61 @@ class Vta_Wc_Custom_Order_Status_Admin {
         <?php
     }
 
+    // POST ACTIONS
+
     /**
-     * Adds custom attribute to our Order Status for new/editted posts.
-     * @param int $post_id
+     * Adds custom attribute to our Order Status for new/edited posts.
+     * @param int $post_ID
+     * @param WP_Post $post
+     * @param bool $update
      * @return void
      * @hooked 'save_post_vta_order_status'
      */
-    public function save_postdata( int $post_id ) {
+    public function save_post_meta( int $post_ID, ?WP_Post $post, ?bool $update ): void {
         // Order Status Color
         if ( array_key_exists(self::META_COLOR_KEY, $_POST) ) {
-            update_post_meta($post_id, self::META_COLOR_KEY, $_POST[self::META_COLOR_KEY]);
+            update_post_meta($post_ID, self::META_COLOR_KEY, $_POST[self::META_COLOR_KEY]);
         }
 
         // Order Status "Is Reorderable"
         $is_reorderable = $_POST[self::META_REORDERABLE_KEY] ?? false;
-        update_post_meta($post_id, self::META_REORDERABLE_KEY, (bool)$is_reorderable);
+        update_post_meta($post_ID, self::META_REORDERABLE_KEY, (bool)$is_reorderable);
+    }
+
+    /**
+     * @param string $new_status
+     * @param string $old_status
+     * @param WP_Post $post
+     * @return void
+     */
+    public function new_post( int $post_id, ?WP_Post $post = null, ?string $old_status = null ): void {
+
+    }
+
+//    /**
+//     * Update settings for new posts that have "publish"
+//     * @param int $post_ID
+//     * @return void
+//     */
+//    public function new_post( int $post_ID ): void {
+//
+//        if (is_null($update)) { // new post
+//
+//        }
+//
+//        $post = get_post($post_ID);
+//        if ( $post->post_type === $this->get_post_type() ) {
+//            $this->update_settings($post);
+//        }
+//    }
+
+    /**
+     * Updates Settings array for new/update Order Status
+     * @param WP_Post $post
+     * @return void
+     */
+    private function update_settings( WP_Post $post ): void {
+        $options = get_option($this->settings_name);
     }
 
     // CUSTOM SETTINGS API
@@ -380,7 +423,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
      * @return void
      * @hooked admin_menu
      */
-    public function register_options_page() {
+    public function register_options_page(): void {
         add_submenu_page(
             'edit.php?post_type=vta_order_status',
             'vta_order_status_settings',
@@ -396,7 +439,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
      * @return void
      * @hooked admin_init
      */
-    public function settings_api_init() {
+    public function settings_api_init(): void {
 
         $options = get_option($this->settings_name);
 
@@ -489,10 +532,11 @@ class Vta_Wc_Custom_Order_Status_Admin {
      * @return void
      */
     public function render_order_arrangement_field( array $args ): void {
-        $label_for                = esc_attr($args['label_for']);
-        $name                     = "$this->settings_name[$label_for]";
-        $value                    = $args[$this->order_status_arrangement_key];
-        $default_order_status_key = $args[$this->default_order_status_key];
+        $label_for       = esc_attr($args['label_for']);
+        $name            = "$this->settings_name[$label_for]";
+        $value           = $args[$this->order_status_arrangement_key];
+        $default_post_id = (int)$args[$this->default_order_status_key];
+        $post            = get_post($default_post_id);
 
         $order_status_arrangement = json_decode($value);
         ?>
@@ -504,7 +548,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
         >
         <ul id="statuses-sortable">
             <?php foreach ( $order_status_arrangement as $order_status ):
-                $is_default = $default_order_status_key === $order_status->order_status_id;
+                $is_default = $post->post_name === $order_status->order_status_id;
                 ?>
 
                 <li class="ui-state-default vta-order-status draggable <?php echo $is_default ? 'default-status' : ''; ?>"
@@ -533,7 +577,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
     public function render_default_order_status_field( array $args ): void {
         $label_for = esc_attr($args['label_for']);
         $name      = "$this->settings_name[$label_for]";
-        $value     = $args[$this->default_order_status_key];
+        $post_id   = $args[$this->default_order_status_key];
 
         $order_status_arrangement = $args[$this->order_status_arrangement_key];
         $order_status_arrangement = json_decode($order_status_arrangement);
@@ -541,13 +585,13 @@ class Vta_Wc_Custom_Order_Status_Admin {
 
         <select id="<?php echo $label_for; ?>"
                 name="<?php echo $name; ?>"
-                value="<?php echo $value; ?>"
+                value="<?php echo $post_id; ?>"
         >
             <?php foreach ( $order_status_arrangement as $order_status ): ?>
 
                 <option id="<?php echo $order_status->order_status_id; ?>"
-                        value="<?php echo $order_status->order_status_id; ?>"
-                    <?php echo $value === $order_status->order_status_id ? 'selected' : ''; ?>
+                        value="<?php echo $order_status->post_id; ?>"
+                    <?php echo $post_id === $order_status->post_id ? 'selected' : ''; ?>
                 >
                     <?php echo $order_status->order_status_name; ?>
                 </option>
@@ -579,13 +623,14 @@ class Vta_Wc_Custom_Order_Status_Admin {
             $order_statuses = is_array($order_statuses) ? $order_statuses : [];
 
             $order_statuses = array_map(fn( WP_Post $post ) => [
+                'post_id'           => $post->ID,
                 'order_status_id'   => $post->post_name,
                 'order_status_name' => $post->post_title
             ], $order_statuses);
 
             $options = [
                 $this->order_status_arrangement_key => json_encode($order_statuses),
-                $this->default_order_status_key     => $order_statuses[0]['order_status_id'] ?? null,
+                $this->default_order_status_key     => $order_statuses[0]['post_id'] ?? null,
             ];
 
             update_option($this->settings_name, $options);

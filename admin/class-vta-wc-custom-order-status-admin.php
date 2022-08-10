@@ -25,8 +25,8 @@ class Vta_Wc_Custom_Order_Status_Admin {
     private string $plugin_name;
     private string $version;
 
-    const POST_TYPE = 'vta_order_status';
-    const META_COLOR_KEY = 'vta_cos_color';
+    const POST_TYPE            = VTA_COS_CPT;
+    const META_COLOR_KEY       = 'vta_cos_color';
     const META_REORDERABLE_KEY = 'vta_cos_is_reorderable';
 
     private string $settings_name                = 'vta_order_status_options';
@@ -42,7 +42,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
      * @param string $plugin_name The name of this plugin.
      * @param string $version The version of this plugin.
      */
-    public function __construct( string $plugin_name, string $version ) {
+    public function __construct(string $plugin_name, string $version) {
         $this->plugin_name = $plugin_name;
         $this->version     = $version;
     }
@@ -60,7 +60,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
 
         // Plugin Settings Page only
         $is_settings_page = in_array(self::POST_TYPE, $query_params) && in_array($this->settings_page, $query_params);
-        if ( is_admin() && $is_settings_page ) {
+        if (is_admin() && $is_settings_page) {
             wp_enqueue_style(
                 "{$this->plugin_name}_settings_css",
                 plugin_dir_url(__FILE__) . 'css/settings.css',
@@ -83,7 +83,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
         $is_new_post_page  = preg_match('/post-new\.php/', $path) || in_array(self::POST_TYPE, $query_params);
         $is_edit_post_page = preg_match('/post\.php/', $path) && $post instanceof WP_Post && $post->post_type === self::POST_TYPE;
         $is_post_page      = $is_new_post_page || $is_edit_post_page;
-        if ( is_admin() && $is_post_page ) {
+        if (is_admin() && $is_post_page) {
             wp_enqueue_style(
                 "{$this->plugin_name}_post_css",
                 plugin_dir_url(__FILE__) . 'css/post.css',
@@ -108,24 +108,24 @@ class Vta_Wc_Custom_Order_Status_Admin {
     public function sync_default_statuses(): void {
 
         $default_colors = [
-            'wc-received'   => '#EE360F',
+            'wc-received' => '#EE360F',
             'wc-processing' => '#E65100',
-            'wc-finishing'  => '#EEEA13',
-            'wc-proof'      => '#F5991B',
-            'wc-ready'      => '#87EC13',
-            'wc-pony'       => '#20EE13',
-            'wc-completed'  => '#20EE13',
-            'wc-on-hold'    => '#DD13EE',
-            'wc-cancelled'  => '#A09FA0',
+            'wc-finishing' => '#EEEA13',
+            'wc-proof' => '#F5991B',
+            'wc-ready' => '#87EC13',
+            'wc-pony' => '#20EE13',
+            'wc-completed' => '#20EE13',
+            'wc-on-hold' => '#DD13EE',
+            'wc-cancelled' => '#A09FA0',
         ];
 
         $default_statuses = wc_get_order_statuses();
 
         // package arguments into array to convert to POST
-        foreach ( $default_statuses as $order_status_key => $order_status_val ) {
+        foreach ($default_statuses as $order_status_key => $order_status_val) {
             $arr = [
-                'name'               => $order_status_key,
-                'title'              => $order_status_val,
+                'name' => $order_status_key,
+                'title' => $order_status_val,
                 self::META_COLOR_KEY => $default_colors[$order_status_key] ?? '#7D7D7D'
             ];
             $this->save_order_status($arr);
@@ -144,31 +144,31 @@ class Vta_Wc_Custom_Order_Status_Admin {
      */
     private function save_order_status(
         array $arr = [
-            'name'                     => '',
-            'title'                    => '',
-            self::META_COLOR_KEY       => '#7D7D7D',
+            'name' => '',
+            'title' => '',
+            self::META_COLOR_KEY => '#7D7D7D',
             self::META_REORDERABLE_KEY => false,
         ]
     ): void {
 
         require_once ABSPATH . '/wp-admin/includes/post.php';
 
-        if ( empty($arr['name']) || empty($arr['title']) ) {
+        if (empty($arr['name']) || empty($arr['title'])) {
             $error_msg = 'Cannot have empty "name" or "title" field in $arr parameter.';
             throw new InvalidArgumentException($error_msg);
         }
 
         $post_id   = post_exists($arr['title']);
         $post_args = [
-            'ID'          => $post_id,
-            'post_title'  => $arr['title'],
-            'name'        => $arr['name'],
-            'post_type'   => self::POST_TYPE,
+            'ID' => $post_id,
+            'post_title' => $arr['title'],
+            'name' => $arr['name'],
+            'post_type' => self::POST_TYPE,
             'post_status' => 'publish',
         ];
         $post_id   = wp_insert_post($post_args);
 
-        if ( $post_id ) {
+        if ($post_id) {
             update_post_meta($post_id, self::META_COLOR_KEY, $arr[self::META_COLOR_KEY] ?? '#7D7D7D');
             update_post_meta($post_id, self::META_REORDERABLE_KEY, $arr[self::META_REORDERABLE_KEY] ?? false);
         }
@@ -197,14 +197,14 @@ class Vta_Wc_Custom_Order_Status_Admin {
      */
     public function delete_posts_settings(): void {
         $args     = [
-            'post_status'    => 'any',
-            'post_type'      => 'vta_order_status',
+            'post_status' => 'any',
+            'post_type' => 'vta_order_status',
             'posts_per_page' => -1
         ];
         $wp_query = new WP_Query($args);
         $posts    = $wp_query->get_posts();
 
-        foreach ( $posts as $post ) {
+        foreach ($posts as $post) {
             wp_delete_post(is_int($post) ? $post : $post->ID);
         }
 
@@ -218,15 +218,15 @@ class Vta_Wc_Custom_Order_Status_Admin {
     public function register_custom_order_statuses() {
         // labels for Custom Order Status (custom post)
         $labels = [
-            'name'               => __('Custom Order Statuses', 'vta-wc-custom-order-status'),
-            'singular_name'      => __('Custom Order Status', 'vta-wc-custom-order-status'),
-            'add_new'            => __('New Order Status', 'vta-wc-custom-order-status'),
-            'add_new_item'       => __('Add New Order Status', 'vta-wc-custom-order-status'),
-            'edit_item'          => __('Edit Order Status', 'vta-wc-custom-order-status'),
-            'new_item'           => __('New Order Status', 'vta-wc-custom-order-status'),
-            'view_item'          => __('View Order Status', 'vta-wc-custom-order-status'),
-            'search_items'       => __('Search Statuses', 'vta-wc-custom-order-status'),
-            'not_found'          => __('No Order Statuses Found', 'vta-wc-custom-order-status'),
+            'name' => __('Custom Order Statuses', 'vta-wc-custom-order-status'),
+            'singular_name' => __('Custom Order Status', 'vta-wc-custom-order-status'),
+            'add_new' => __('New Order Status', 'vta-wc-custom-order-status'),
+            'add_new_item' => __('Add New Order Status', 'vta-wc-custom-order-status'),
+            'edit_item' => __('Edit Order Status', 'vta-wc-custom-order-status'),
+            'new_item' => __('New Order Status', 'vta-wc-custom-order-status'),
+            'view_item' => __('View Order Status', 'vta-wc-custom-order-status'),
+            'search_items' => __('Search Statuses', 'vta-wc-custom-order-status'),
+            'not_found' => __('No Order Statuses Found', 'vta-wc-custom-order-status'),
             'not_found_in_trash' => __('No Order Statuses found in Trash', 'vta-wc-custom-order-status')
         ];
 
@@ -234,13 +234,13 @@ class Vta_Wc_Custom_Order_Status_Admin {
         register_post_type(
             self::POST_TYPE,
             [
-                'labels'       => $labels,
-                'public'       => false,
-                'show_ui'      => true,
+                'labels' => $labels,
+                'public' => false,
+                'show_ui' => true,
                 'show_in_menu' => true,
-                'description'  => 'Customizable WooCommerce custom order statuses that re-purposed for VTA Document Services workflow.',
+                'description' => 'Customizable WooCommerce custom order statuses that re-purposed for VTA Document Services workflow.',
                 'hierarchical' => false,
-                'menu_icon'    => 'dashicons-block-default'
+                'menu_icon' => 'dashicons-block-default'
             ]
         );
 
@@ -369,9 +369,9 @@ class Vta_Wc_Custom_Order_Status_Admin {
      * @return void
      * @hooked 'save_post_vta_order_status'
      */
-    public function save_post_meta( int $post_ID, ?WP_Post $post, ?bool $update ): void {
+    public function save_post_meta(int $post_ID, ?WP_Post $post, ?bool $update): void {
         // Order Status Color
-        if ( array_key_exists(self::META_COLOR_KEY, $_POST) ) {
+        if (array_key_exists(self::META_COLOR_KEY, $_POST)) {
             update_post_meta($post_ID, self::META_COLOR_KEY, $_POST[self::META_COLOR_KEY]);
         }
 
@@ -386,7 +386,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
      * @param WP_Post $post
      * @return void
      */
-    public function new_post( int $post_id, ?WP_Post $post = null, ?string $old_status = null ): void {
+    public function new_post(int $post_id, ?WP_Post $post = null, ?string $old_status = null): void {
 
     }
 
@@ -412,7 +412,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
      * @param WP_Post $post
      * @return void
      */
-    private function update_settings( WP_Post $post ): void {
+    private function update_settings(WP_Post $post): void {
         $options = get_option($this->settings_name);
     }
 
@@ -465,8 +465,8 @@ class Vta_Wc_Custom_Order_Status_Admin {
             $this->settings_field,
             'vta_cos_order_status',
             [
-                'label_for'                         => $this->order_status_arrangement_key,
-                $this->default_order_status_key     => $options[$this->default_order_status_key] ?? null,
+                'label_for' => $this->order_status_arrangement_key,
+                $this->default_order_status_key => $options[$this->default_order_status_key] ?? null,
                 $this->order_status_arrangement_key => $options[$this->order_status_arrangement_key] ?? '[]'
             ]
         );
@@ -479,8 +479,8 @@ class Vta_Wc_Custom_Order_Status_Admin {
             $this->settings_field,
             'vta_cos_order_status',
             [
-                'label_for'                         => $this->default_order_status_key,
-                $this->default_order_status_key     => $options[$this->default_order_status_key] ?? null,
+                'label_for' => $this->default_order_status_key,
+                $this->default_order_status_key => $options[$this->default_order_status_key] ?? null,
                 $this->order_status_arrangement_key => $options[$this->order_status_arrangement_key] ?? '[]'
             ]
         );
@@ -512,7 +512,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
      * @return void
      */
     private function display_setting_msg(): void {
-        if ( isset($_GET['settings-updated']) ) {
+        if (isset($_GET['settings-updated'])) {
             add_settings_error(
                 "{$this->settings_name}_messages",
                 "{$this->settings_name}_message_success",
@@ -531,7 +531,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
      * @param array $args
      * @return void
      */
-    public function render_order_arrangement_field( array $args ): void {
+    public function render_order_arrangement_field(array $args): void {
         $label_for       = esc_attr($args['label_for']);
         $name            = "$this->settings_name[$label_for]";
         $value           = $args[$this->order_status_arrangement_key];
@@ -547,7 +547,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
                value="<?php echo $value; ?>"
         >
         <ul id="statuses-sortable">
-            <?php foreach ( $order_status_arrangement as $order_status ):
+            <?php foreach ($order_status_arrangement as $order_status):
                 $is_default = $post->post_name === $order_status->order_status_id;
                 ?>
 
@@ -574,7 +574,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
      * @param array $args
      * @return void
      */
-    public function render_default_order_status_field( array $args ): void {
+    public function render_default_order_status_field(array $args): void {
         $label_for = esc_attr($args['label_for']);
         $name      = "$this->settings_name[$label_for]";
         $post_id   = $args[$this->default_order_status_key];
@@ -587,7 +587,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
                 name="<?php echo $name; ?>"
                 value="<?php echo $post_id; ?>"
         >
-            <?php foreach ( $order_status_arrangement as $order_status ): ?>
+            <?php foreach ($order_status_arrangement as $order_status): ?>
 
                 <option id="<?php echo $order_status->order_status_id; ?>"
                         value="<?php echo $order_status->post_id; ?>"
@@ -613,24 +613,24 @@ class Vta_Wc_Custom_Order_Status_Admin {
     private function sync_settings(): void {
         $options = get_option($this->settings_name) ?? null;
 
-        if ( empty($options) || empty($options[$this->default_order_status_key] ?? null) ) {
+        if (empty($options) || empty($options[$this->default_order_status_key] ?? null)) {
             $args           = [
                 'post_status' => 'publish',
-                'post_type'   => self::POST_TYPE,
+                'post_type' => self::POST_TYPE,
             ];
             $wp_query       = new WP_Query($args);
             $order_statuses = $wp_query->get_posts();
             $order_statuses = is_array($order_statuses) ? $order_statuses : [];
 
-            $order_statuses = array_map(fn( WP_Post $post ) => [
-                'post_id'           => $post->ID,
-                'order_status_id'   => $post->post_name,
+            $order_statuses = array_map(fn(WP_Post $post) => [
+                'post_id' => $post->ID,
+                'order_status_id' => $post->post_name,
                 'order_status_name' => $post->post_title
             ], $order_statuses);
 
             $options = [
                 $this->order_status_arrangement_key => json_encode($order_statuses),
-                $this->default_order_status_key     => $order_statuses[0]['post_id'] ?? null,
+                $this->default_order_status_key => $order_statuses[0]['post_id'] ?? null,
             ];
 
             update_option($this->settings_name, $options);

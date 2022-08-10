@@ -9,6 +9,7 @@ function kebabCase(str) {
         .replace(/\s/, '-');
 }
 
+// MAIN //
 (function ($) {
 
     // COLOR PICKER //
@@ -44,5 +45,10 @@ function kebabCase(str) {
 
         return true;
     });
+
+    // REMOVE COLLAPSABLE POSTBOX BEHAVIOR
+    $('.postbox .hndle').unbind();
+    $('.postbox .handlediv').remove();
+    $('.postbox').removeClass('closed');
 
 })(jQuery);

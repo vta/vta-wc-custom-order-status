@@ -4,8 +4,6 @@
  * The admin-specific functionality of the plugin.
  *
  * @link       https://jamespham.io
- * @since      1.0.0
- *
  * @package    Vta_Wc_Custom_Order_Status
  * @subpackage Vta_Wc_Custom_Order_Status/admin
  */
@@ -19,6 +17,7 @@
  * @package    Vta_Wc_Custom_Order_Status
  * @subpackage Vta_Wc_Custom_Order_Status/admin
  * @author     James Pham <jamespham93@yahoo.com>
+ * TODO - (OPTIONAL) break down into smaller classes. Insert hooks into broken down classes. Too confusing to store hooks in class-vta-custom-order-status.php...
  */
 class Vta_Wc_Custom_Order_Status_Admin {
 

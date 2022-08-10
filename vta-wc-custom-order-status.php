@@ -29,7 +29,7 @@ require_once 'admin/class-vta-wc-custom-order-status-admin.php';
 require_once 'utils/common.php';
 
 // If this file is called directly, abort.
-if (!defined('WPINC')) {
+if ( !defined('WPINC') ) {
     die;
 }
 
@@ -41,6 +41,8 @@ if (!defined('WPINC')) {
 const VTA_WC_CUSTOM_ORDER_STATUS_VERSION = '1.0.0';
 const VTA_WC_COS_PLUGIN_NAME             = 'vta-wc-custom-order-status';
 const VTA_COS_CPT                        = 'vta_order_status';
+const META_COLOR_KEY                     = 'vta_cos_color';
+const META_REORDERABLE_KEY               = 'vta_cos_is_reorderable';
 
 /**
  * The code that runs during plugin activation.

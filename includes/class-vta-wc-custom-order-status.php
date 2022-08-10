@@ -122,14 +122,20 @@ class Vta_Wc_Custom_Order_Status {
     private function define_admin_hooks(): void {
         $plugin_admin = new Vta_Wc_Custom_Order_Status_Admin($this->get_plugin_name(), $this->get_version());
 
-        $this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts');
+        // Register scripts
         $this->loader->add_action('init', $plugin_admin, 'register_custom_order_statuses');
+
+        // Custom Admin screens
         $this->loader->add_action('admin_init', $plugin_admin, 'customize_edit_screen');
         $this->loader->add_action('admin_init', $plugin_admin, 'settings_api_init');
         $this->loader->add_action('admin_menu', $plugin_admin, 'register_options_page');
+
+        // Admin scripts
+        $this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts');
         $this->loader->add_action('admin_post_default_settings', $plugin_admin, 'default_settings');
-        $this->loader->add_action("save_post_{$plugin_admin->get_post_type()}", $plugin_admin, 'save_post_meta', 11, 3);
-        $this->loader->add_action("publish_{$plugin_admin->get_post_type()}", $plugin_admin, 'new_post', 11, 3);
+
+        // Custom Post Updates
+        $this->loader->add_action("save_post_{$plugin_admin->get_post_type()}", $plugin_admin, 'save_post', 11, 3);
     }
 
     /**
@@ -142,7 +148,6 @@ class Vta_Wc_Custom_Order_Status {
 
         $this->loader->add_action('wp_enqueue_scripts', $plugin_public, 'enqueue_styles');
         $this->loader->add_action('wp_enqueue_scripts', $plugin_public, 'enqueue_scripts');
-
     }
 
     /**

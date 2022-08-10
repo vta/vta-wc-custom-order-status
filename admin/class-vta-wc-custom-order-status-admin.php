@@ -35,8 +35,6 @@ class Vta_Wc_Custom_Order_Status_Admin {
     private string $settings_page                = 'vta_order_status_settings';
     private string $settings_field               = 'vta_order_status_settings_fields';
 
-    private string $save_post_hook = '';
-
     /**
      * Initialize the class and set its properties.
      * @param string $plugin_name The name of this plugin.
@@ -369,7 +367,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
      * @return void
      * @hooked 'save_post_vta_order_status'
      */
-    public function save_post_meta( int $post_ID, ?WP_Post $post, ?bool $update ): void {
+    public function save_post( int $post_ID, ?WP_Post $post, ?bool $update ): void {
         // Order Status Color
         if ( array_key_exists(self::META_COLOR_KEY, $_POST) ) {
             update_post_meta($post_ID, self::META_COLOR_KEY, $_POST[self::META_COLOR_KEY]);
@@ -378,42 +376,11 @@ class Vta_Wc_Custom_Order_Status_Admin {
         // Order Status "Is Reorderable"
         $is_reorderable = $_POST[self::META_REORDERABLE_KEY] ?? false;
         update_post_meta($post_ID, self::META_REORDERABLE_KEY, (bool)$is_reorderable);
-    }
 
-    /**
-     * @param string $new_status
-     * @param string $old_status
-     * @param WP_Post $post
-     * @return void
-     */
-    public function new_post( int $post_id, ?WP_Post $post = null, ?string $old_status = null ): void {
+        // Update in settings where needed
+        if ( $post instanceof WP_Post && $post->post_status === 'publish' ) {
 
-    }
-
-//    /**
-//     * Update settings for new posts that have "publish"
-//     * @param int $post_ID
-//     * @return void
-//     */
-//    public function new_post( int $post_ID ): void {
-//
-//        if (is_null($update)) { // new post
-//
-//        }
-//
-//        $post = get_post($post_ID);
-//        if ( $post->post_type === $this->get_post_type() ) {
-//            $this->update_settings($post);
-//        }
-//    }
-
-    /**
-     * Updates Settings array for new/update Order Status
-     * @param WP_Post $post
-     * @return void
-     */
-    private function update_settings( WP_Post $post ): void {
-        $options = get_option($this->settings_name);
+        }
     }
 
     // CUSTOM SETTINGS API
@@ -606,6 +573,16 @@ class Vta_Wc_Custom_Order_Status_Admin {
         <?php
     }
 
+    // GETTERS //
+
+    /**
+     * @return string
+     */
+    public function get_post_type(): string {
+        return self::POST_TYPE;
+    }
+
+    // PRIVATE METHODS //
     /**
      * Assigns settings if empty or arrangement value is empty
      * @return void
@@ -637,12 +614,12 @@ class Vta_Wc_Custom_Order_Status_Admin {
         }
     }
 
-    // GETTERS //
-
     /**
-     * @return string
+     * Updates Settings array for new/updated Order Status
+     * @param WP_Post $post
+     * @return void
      */
-    public function get_post_type(): string {
-        return self::POST_TYPE;
+    private function update_settings( WP_Post $post ): void {
+        $options = get_option($this->settings_name);
     }
 }

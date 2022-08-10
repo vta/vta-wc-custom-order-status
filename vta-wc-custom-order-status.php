@@ -25,8 +25,11 @@
  * Domain Path:       /languages
  */
 
+// Global files for plugin and/or theme usage
 require_once 'admin/class-vta-wc-custom-order-status-admin.php';
 require_once 'utils/common.php';
+require_once 'models/VTACustomOrderStatus.php';
+require_once 'models/VTACosSettings.php';
 
 // If this file is called directly, abort.
 if ( !defined('WPINC') ) {

@@ -26,7 +26,7 @@ class VTACustomOrderStatus {
             $err_msg       = "VTACustomOrderStatus::__construct() error - Invalid post. No post found for \"$post_arg_json\"";
             throw new Exception($err_msg);
 
-        } elseif ( $post->post_type !== self::POST_TYPE ) {
+        } elseif ( $wp_post->post_type !== self::POST_TYPE ) {
             $post_type = self::POST_TYPE;
             $err_msg   = "VTACustomOrderStatus::__construct() error - Post is not of type $post_type. Post #{$post->ID} is of type {$post->post_type}";
             throw new Exception($err_msg);
@@ -71,6 +71,22 @@ class VTACustomOrderStatus {
      */
     public function get_cos_reorderable(): bool {
         return get_post_meta($this->post->ID, self::META_REORDERABLE_KEY, true);
+    }
+
+    /**
+     * Returns the Custom Order Status name
+     * @return string
+     */
+    public function get_cos_name(): string {
+        return $this->post->post_title;
+    }
+
+    /**
+     * Returns Post ID of the custom order status
+     * @return int
+     */
+    public function get_post_id(): int {
+        return $this->post->ID;
     }
 
     /**

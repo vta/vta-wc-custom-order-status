@@ -128,6 +128,8 @@ class Vta_Wc_Custom_Order_Status {
         // Custom Admin screens
         $this->loader->add_action('admin_init', $plugin_admin, 'customize_edit_screen');
         $this->loader->add_action('admin_init', $plugin_admin, 'settings_api_init');
+
+        // Settings
         $this->loader->add_action('admin_menu', $plugin_admin, 'register_options_page');
 
         // Admin scripts

@@ -17,9 +17,7 @@
     function returnStatusNameId() {
         const children = sortable.children('li.vta-order-status').toArray();
         return children.map(function (child) {
-            const order_status_id   = child.id;
-            const order_status_name = $(child).attr('data-name').trim();
-            return { order_status_id, order_status_name };
+            return child.id;
         });
     }
 
@@ -35,7 +33,7 @@
 
     // Reset all custom order statuses & settings to default
     $('form#reset-settings-form').submit(function () {
-        return confirm('Are you sure you want to reset all "Order Statuses" and plugin settings?')
+        return confirm('Are you sure you want to reset all "Order Statuses" and plugin settings?');
     });
 
 })(jQuery);

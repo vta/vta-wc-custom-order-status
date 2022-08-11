@@ -265,8 +265,14 @@ class VTACustomOrderStatuses {
 
         // remove from arrangement
         if ( in_array($post_id, $arrangement) ) {
-            $filtered_arrangement = array_values(array_filter($arrangement, fn( $id ) => $id !== $post_id));
-            $this->settings->set_arrangement($filtered_arrangement);
+            $arrangement = array_values(array_filter($arrangement, fn( $id ) => $id !== $post_id));
+            $this->settings->set_arrangement($arrangement);
+        }
+
+        // remove & replace if current is default order status
+        if ( $this->settings->get_default() === $post_id ) {
+            $new_default_id = $arrangement[0] ?? null;
+            $this->settings->set_default($new_default_id);
         }
 
         $updated_settings = $this->settings->to_array();

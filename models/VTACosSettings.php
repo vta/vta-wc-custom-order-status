@@ -26,6 +26,15 @@ class VTACosSettings {
     // SETTERS //
 
     /**
+     * Sets Post ID for default order status
+     * @param int $post_id
+     * @return void
+     */
+    public function set_default( int $post_id ) {
+        $this->order_status_default = $post_id;
+    }
+
+    /**
      * Sets new arrangement array for settings object. Meant to be used with to_array()
      * @param array $post_ids_arr
      * @return void
@@ -38,10 +47,10 @@ class VTACosSettings {
 
     /**
      * Returns Post ID of the default order status
-     * @return int|string|null
+     * @return int|null
      */
-    public function get_default() {
-        return $this->order_status_default;
+    public function get_default(): ?int {
+        return (int)$this->order_status_default ?: null;
     }
 
     /**

@@ -11,9 +11,6 @@
 /**
  * The admin-specific functionality of the plugin.
  *
- * Defines the plugin name, version, and two examples hooks for how to
- * enqueue the admin-specific stylesheet and JavaScript.
- *
  * @package    Vta_Wc_Custom_Order_Status
  * @subpackage Vta_Wc_Custom_Order_Status/admin
  * @author     James Pham <jamespham93@yahoo.com>
@@ -24,7 +21,6 @@ class Vta_Wc_Custom_Order_Status_Admin {
     private string $version;
 
     private string                 $settings_name = VTA_COS_SETTINGS_NAME;
-    private VTACosSettings         $settings;
     private VTACustomOrderStatuses $order_statuses;
     private VTACosSettingsManager  $settings_manager;
 
@@ -37,10 +33,11 @@ class Vta_Wc_Custom_Order_Status_Admin {
         $this->plugin_name = $plugin_name;
         $this->version     = $version;
 
-        $settings               = get_option($this->settings_name) ?: [];
-        $this->settings         = new VTACosSettings($settings);
-        $this->settings_manager = new VTACosSettingsManager($plugin_name, $version, $this->settings);
-        $this->order_statuses   = new VTACustomOrderStatuses($plugin_name, $version);
+        $settings = get_option($this->settings_name) ?: [];
+        $settings = new VTACosSettings($settings);
+
+        $this->settings_manager = new VTACosSettingsManager($plugin_name, $version, $settings);
+        $this->order_statuses   = new VTACustomOrderStatuses($plugin_name, $version, $settings);
     }
 
     /**

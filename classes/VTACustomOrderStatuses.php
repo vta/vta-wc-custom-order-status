@@ -14,14 +14,24 @@ class VTACustomOrderStatuses {
     private string $meta_color_key       = META_COLOR_KEY;
     private string $meta_reorderable_key = META_REORDERABLE_KEY;
 
+    // SETTINGS var
+    private VTACosSettings $settings;
+    private string         $settings_name = VTA_COS_SETTINGS_NAME;
+
     /**
      * Encapsulates hooks in class constructors. Ditches loader method set up by boilerplate.
      * @param string $plugin_name
      * @param string $plugin_version
+     * @param VTACosSettings $settings
      */
-    public function __construct( string $plugin_name, string $plugin_version ) {
+    public function __construct(
+        string         $plugin_name,
+        string         $plugin_version,
+        VTACosSettings $settings
+    ) {
         $this->plugin_name    = $plugin_name;
         $this->plugin_version = $plugin_version;
+        $this->settings       = $settings;
 
         add_action('admin_enqueue_scripts', [ $this, 'enqueue_scripts' ]);
         add_action('init', [ $this, 'register_custom_order_statuses' ]);
@@ -221,9 +231,46 @@ class VTACustomOrderStatuses {
         update_post_meta($post_ID, $this->meta_reorderable_key, (bool)$is_reorderable);
 
         // Update in settings where needed
-        if ( $post instanceof WP_Post && $post->post_status === 'publish' ) {
+        if ( $post instanceof WP_Post && $post->post_status === 'publish' )
+            $this->update_to_settings($post_ID);
+        else
+            $this->remove_from_settings($post_ID);
+    }
 
+    /**
+     * Adds to arrangement array if applicable
+     * @param int $post_id
+     * @return void
+     */
+    public function update_to_settings( int $post_id ): void {
+        $arrangement = $this->settings->get_arrangement();
+
+        if ( !in_array($post_id, $arrangement) ) {
+            $arrangement[] = $post_id;
+            $this->settings->set_arrangement($arrangement);
+
+            $updated_settings = $this->settings->to_array();
+            update_option($this->settings_name, $updated_settings);
         }
+    }
+
+    /**
+     * Removes from arrangement array if applicable.
+     * Also removes from default order status ID and replaces it with the first item in arrangement array.
+     * @param int $post_id
+     * @return void
+     */
+    public function remove_from_settings( int $post_id ): void {
+        $arrangement = $this->settings->get_arrangement();
+
+        // remove from arrangement
+        if ( in_array($post_id, $arrangement) ) {
+            $filtered_arrangement = array_values(array_filter($arrangement, fn( $id ) => $id !== $post_id));
+            $this->settings->set_arrangement($filtered_arrangement);
+        }
+
+        $updated_settings = $this->settings->to_array();
+        update_option($this->settings_name, $updated_settings);
     }
 
 }

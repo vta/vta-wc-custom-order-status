@@ -24,19 +24,10 @@ class Vta_Wc_Custom_Order_Status_Admin {
     private string $plugin_name;
     private string $version;
 
-    const POST_TYPE            = VTA_COS_CPT;
-    const META_COLOR_KEY       = META_COLOR_KEY;
-    const META_REORDERABLE_KEY = META_REORDERABLE_KEY;
-
     private string                 $settings_name = VTA_COS_SETTINGS_NAME;
     private VTACosSettings         $settings;
     private VTACustomOrderStatuses $order_statuses;
     private VTACosSettingsManager  $settings_manager;
-
-    private string $default_order_status_key     = 'order_status_default';
-    private string $order_status_arrangement_key = 'order_status_arrangement';
-    private string $settings_page                = 'vta_order_status_settings';
-    private string $settings_field               = 'vta_order_status_settings_fields';
 
     /**
      * Initialize the class and set its properties.

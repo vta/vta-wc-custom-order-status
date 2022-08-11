@@ -26,6 +26,7 @@
  * @package    Vta_Wc_Custom_Order_Status
  * @subpackage Vta_Wc_Custom_Order_Status/includes
  * @author     James Pham <jamespham93@yahoo.com>
+ * NOTE: Loader methods is mostly deprecated... Hooks are called directly in their own sub-classes...
  */
 class Vta_Wc_Custom_Order_Status {
 

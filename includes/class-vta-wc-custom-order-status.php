@@ -123,7 +123,7 @@ class Vta_Wc_Custom_Order_Status {
         $plugin_admin = new Vta_Wc_Custom_Order_Status_Admin($this->get_plugin_name(), $this->get_version());
 
         // Register scripts
-        $this->loader->add_action('init', $plugin_admin, 'register_custom_order_statuses');
+//        $this->loader->add_action('init', $plugin_admin, 'register_custom_order_statuses');
 
         // Custom Admin screens
         $this->loader->add_action('admin_init', $plugin_admin, 'customize_edit_screen');
@@ -131,13 +131,13 @@ class Vta_Wc_Custom_Order_Status {
 
         // Settings
         $this->loader->add_action('admin_menu', $plugin_admin, 'register_options_page');
+        $this->loader->add_action('admin_post_default_settings', $plugin_admin, 'default_settings');
 
         // Admin scripts
         $this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts');
-        $this->loader->add_action('admin_post_default_settings', $plugin_admin, 'default_settings');
 
         // Custom Post Updates
-        $this->loader->add_action("save_post_{$plugin_admin->get_post_type()}", $plugin_admin, 'save_post', 11, 3);
+//        $this->loader->add_action("save_post_{$plugin_admin->get_post_type()}", $plugin_admin, 'save_post', 11, 3);
     }
 
     /**

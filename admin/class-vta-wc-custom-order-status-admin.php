@@ -28,8 +28,9 @@ class Vta_Wc_Custom_Order_Status_Admin {
     const META_COLOR_KEY       = META_COLOR_KEY;
     const META_REORDERABLE_KEY = META_REORDERABLE_KEY;
 
-    private string         $settings_name = 'vta_order_status_options';
+    private string         $settings_name = VTA_COS_SETTINGS_NAME;
     private VTACosSettings $settings;
+    private VTACustomOrderStatuses $order_statuses;
 
     private string $default_order_status_key     = 'order_status_default';
     private string $order_status_arrangement_key = 'order_status_arrangement';
@@ -47,6 +48,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
 
         $settings       = get_option($this->settings_name) ?: [];
         $this->settings = new VTACosSettings($settings);
+        $this->order_statuses = new VTACustomOrderStatuses($plugin_name, $version);
     }
 
     /**
@@ -55,51 +57,6 @@ class Vta_Wc_Custom_Order_Status_Admin {
      * @hooked admin_enqueue_scripts
      */
     public function enqueue_scripts(): void {
-        global $post;
-        list('query_params' => $query_params, 'path' => $path) = get_query_params();
-
-        wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/vta-wc-custom-order-status-admin.css', array(), $this->version, 'all');
-
-        // Plugin Settings Page only
-        $is_settings_page = in_array(self::POST_TYPE, $query_params) && in_array($this->settings_page, $query_params);
-        if ( is_admin() && $is_settings_page ) {
-            wp_enqueue_style(
-                "{$this->plugin_name}_settings_css",
-                plugin_dir_url(__FILE__) . 'css/settings.css',
-                [],
-                $this->version
-            );
-
-            wp_enqueue_script('jquery-ui-sortable');
-            wp_enqueue_script('jquery-ui-draggable');
-            wp_enqueue_script(
-                "{$this->plugin_name}_settings_js",
-                plugin_dir_url(__FILE__) . 'js/settings.js',
-                [ 'jquery', 'jquery-ui-sortable', 'jquery-ui-draggable' ],
-                $this->version,
-                true
-            );
-        }
-
-        // New/Edit Post page
-        $is_new_post_page  = preg_match('/post-new\.php/', $path) || in_array(self::POST_TYPE, $query_params);
-        $is_edit_post_page = preg_match('/post\.php/', $path) && $post instanceof WP_Post && $post->post_type === self::POST_TYPE;
-        $is_post_page      = $is_new_post_page || $is_edit_post_page;
-        if ( is_admin() && $is_post_page ) {
-            wp_enqueue_style(
-                "{$this->plugin_name}_post_css",
-                plugin_dir_url(__FILE__) . 'css/post.css',
-                [],
-                $this->version
-            );
-            wp_enqueue_script(
-                "{$this->plugin_name}_post_js",
-                plugin_dir_url(__FILE__) . 'js/post.js',
-                [ 'jquery' ],
-                $this->version,
-                true
-            );
-        }
     }
 
     /**

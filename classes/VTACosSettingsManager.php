@@ -162,18 +162,20 @@ class VTACosSettingsManager {
 
         $default_statuses = wc_get_order_statuses();
 
-        // package arguments into array to convert to POST
-        foreach ( $default_statuses as $order_status_key => $order_status_val ) {
-            $arr = [
-                'name'                => $order_status_key,
-                'title'               => $order_status_val,
-                $this->meta_color_key => $default_colors[$order_status_key] ?? '#7D7D7D'
-            ];
-            $this->save_order_status($arr);
-        }
+        if (count($default_statuses)) {
+            // package arguments into array to convert to POST
+            foreach ( $default_statuses as $order_status_key => $order_status_val ) {
+                $arr = [
+                    'name'                => $order_status_key,
+                    'title'               => $order_status_val,
+                    $this->meta_color_key => $default_colors[$order_status_key] ?? '#7D7D7D'
+                ];
+                $this->save_order_status($arr);
+            }
 
-        // We should sync settings after setting default Statuses
-        $this->sync_settings();
+            // We should sync settings after setting default Statuses
+            $this->sync_settings();
+        }
     }
 
     /**
@@ -307,6 +309,8 @@ class VTACosSettingsManager {
      */
     private function sync_settings(): void {
         if ( empty($this->settings->get_default() ?? null) ) {
+            $default_post_id = null;
+
             $wp_query       = new WP_Query([
                 'post_status' => 'publish',
                 'post_type'   => $this->post_type,
@@ -314,11 +318,16 @@ class VTACosSettingsManager {
             $order_statuses = $wp_query->get_posts();
             $order_statuses = is_array($order_statuses) ? $order_statuses : [];
 
-            $order_statuses = array_map(fn( WP_Post $post ) => $post->ID, $order_statuses);
+            $order_statuses = array_map(function ( WP_Post $post ) use ( &$default_post_id ) {
+                if ( $post->post_type && preg_match('/(received)|(processing)/i', $post->post_title) ) {
+                    $default_post_id = $post->ID;
+                }
+                return $post->ID;
+            }, $order_statuses);
 
             $options = [
                 $this->order_status_arrangement_key => $order_statuses,
-                $this->order_status_default_key     => $order_statuses[0]['post_id'] ?? null,
+                $this->order_status_default_key     => $default_post_id ?? $order_statuses[0] ?? null,
             ];
 
             update_option($this->settings_name, $options);

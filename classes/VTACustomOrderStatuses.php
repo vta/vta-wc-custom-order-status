@@ -37,6 +37,8 @@ class VTACustomOrderStatuses {
         add_action('init', [ $this, 'register_custom_order_statuses' ]);
         add_action('admin_init', [ $this, 'customize_edit_screen' ]);
         add_action("save_post_{$this->post_type}", [ $this, 'save_post' ], 11, 3);
+        add_filter("manage_{$this->post_type}_posts_columns", [ $this, 'add_custom_col' ], 10, 1);
+        add_action("manage_{$this->post_type}_posts_custom_column", [ $this, 'inject_custom_col_data' ], 10, 2);
     }
 
     /**
@@ -101,6 +103,8 @@ class VTACustomOrderStatuses {
             ]
         );
     }
+
+    // NEW/EDIT POST SCREEN (post.php) //
 
     /**
      * Customizes Edit screen for Custom Order Status post page.
@@ -277,6 +281,56 @@ class VTACustomOrderStatuses {
 
         $updated_settings = $this->settings->to_array();
         update_option($this->settings_name, $updated_settings);
+    }
+
+    // LIST TABLE (edit.php) //
+
+    public function add_custom_col( array $post_columns ): array {
+        // change title to "Order Status Name"
+        $post_columns['title'] = 'Order Status Name';
+
+        // add custom columns
+        $post_columns[$this->meta_color_key]       = 'Color';
+        $post_columns[$this->meta_reorderable_key] = 'Is Re-Orderable';
+
+        return $post_columns;
+    }
+
+    /**
+     * Adds data to custom column
+     * @param string $col_name
+     * @param int $post_id
+     * @return void
+     */
+    public function inject_custom_col_data( string $col_name, int $post_id ): void {
+        $content = '';
+        $class   = '';
+
+        try {
+            $order_status = new VTACustomOrderStatus($post_id);
+        } catch ( Exception $e ) {
+            error_log("VTAHolidayPosts::inject_custom_col_data() Error - $e");
+            $order_status = null;
+        }
+
+        if ( !$order_status instanceof VTACustomOrderStatus ) {
+            return;
+        }
+
+        switch ( $col_name ) {
+            case $this->meta_color_key:
+                $color = $order_status->get_cos_color() ?? '#000';
+                $content = "<span class='cos-color-chip' style='background: $color;'>$color</span>";
+                $class   = 'cos-color-col';
+                break;
+            case $this->meta_reorderable_key:
+                $text = $order_status->get_cos_reorderable() ? '<span class="dashicons dashicons-yes"></span>' : '';
+                $content = "<p class='cos-reorderable-check'>$text</p>";
+                $class      = 'cos-reorderable-col';
+                break;
+        }
+
+        printf('<p class="%s">%s</p>', $class, $content);
     }
 
 }

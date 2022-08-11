@@ -66,13 +66,13 @@ class VTACustomOrderStatuses {
         if ( is_admin() && $is_post_page ) {
             wp_enqueue_style(
                 "{$this->plugin_name}_post_css",
-                plugin_dir_url(__FILE__) . 'css/post.css',
+                plugin_dir_url(__DIR__) . 'admin/css/post.css',
                 [],
                 $this->plugin_version
             );
             wp_enqueue_script(
                 "{$this->plugin_name}_post_js",
-                plugin_dir_url(__FILE__) . 'js/post.js',
+                plugin_dir_url(__DIR__) . 'admin/js/post.js',
                 [ 'jquery' ],
                 $this->plugin_version,
                 true

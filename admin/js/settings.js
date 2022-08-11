@@ -34,17 +34,29 @@
     // RESET BEHAVIOR //
 
     // Reset all custom order statuses & settings to default
-    const resetDialog = $("#reset-confirm-dialog");
-    const resetForm   = $('form#reset-settings-form');
+    const resetDialog  = $("#reset-confirm-dialog");
+    const resetForm    = $('form#reset-settings-form');
+    const resetConfirm = $('#confirm-value');
+    const resetBtn     = $('#reset-settings-btn');
 
+    /**
+     * Default Reset Form submit callback. Prevents auto-submission without confirmation dialog.
+     * @param e
+     * @returns {boolean}
+     */
     function defaultSubmit(e) {
-        resetDialog.dialog('open');
-        e.preventDefault();
-        return false;
+        const confirmed = !!resetConfirm.val();
+        if (!confirmed) {
+            resetDialog.dialog('open');
+        }
+        return confirmed;
     }
+
+    resetForm.submit(defaultSubmit);
 
     // reset dialog settings
     resetDialog.dialog({
+        appendTo:  'form#reset-settings-form',
         resizable: false,
         draggable: false,
         autoOpen:  false,
@@ -53,16 +65,22 @@
         modal:     true,
         buttons:   {
             "Reset": function () {
-                resetForm.unbind('submit', defaultSubmit).submit();
-                $(this).dialog("close");
+                // prevent modal closing while processing reset...
+                // disable all buttons on the modal & prevent closing by Esc button
+                $('button.ui-button.ui-widget').button('disable');
+                $(this).dialog("option", "closeOnEscape", false);
+
+                // add loading spinner to reset button
+                $('.ui-dialog-buttonset > button.ui-button.ui-widget:first-child')
+                    .button('option', 'label', 'Loading...');
+
+                resetConfirm.val(true); // a bit hacky, but input must be clicked after closing dialog...
+                resetBtn.click();
             },
             Cancel:  function () {
                 $(this).dialog("close");
             }
-        },
+        }
     });
-
-    // prevent default behavior
-    resetForm.submit(defaultSubmit);
 
 })(jQuery);

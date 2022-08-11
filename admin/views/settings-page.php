@@ -18,17 +18,18 @@
     <input type="hidden" name="action" value="default_settings">
 
     <h2>Reset to default settings</h2>
+    <input type="hidden" id="confirm-value">
     <?php submit_button('Reset Settings', 'button-hero', 'submit', true, [
         'id' => 'reset-settings-btn'
     ]); ?>
     <p class="description">
         <strong class="reset-warning">WARNING:</strong> Use this button to restore ALL custom order statuses and plugin settings to the default settings.
     </p>
-</form>
 
-<div id="reset-confirm-dialog" title="Reset Order Statuses">
-    <p>
-        <span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span> Default Order Statuses
-        will be reset to its original settings & all custom Order Statuses will be deleted. Are you sure?
-    </p>
-</div>
+    <div id="reset-confirm-dialog" title="Reset Order Statuses">
+        <p>
+            <span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span> Default Order Statuses
+            will be reset to its original settings & all custom Order Statuses will be deleted. Are you sure?
+        </p>
+    </div>
+</form>

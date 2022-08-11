@@ -55,3 +55,9 @@ div.ui-dialog-buttonset > button.ui-button:first-child:hover {
     background: #FF6263;
 }
 
+button.ui-button:disabled[disabled].ui-button-icon-only.ui-dialog-titlebar-close {
+    color: #fff !important;
+    border: none;
+    background: #29588C !important;
+    text-shadow: none !important;
+}

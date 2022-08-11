@@ -37,8 +37,12 @@ class VTACustomOrderStatuses {
         add_action('init', [ $this, 'register_custom_order_statuses' ]);
         add_action('admin_init', [ $this, 'customize_edit_screen' ]);
         add_action("save_post_{$this->post_type}", [ $this, 'save_post' ], 11, 3);
+
+        // list table hooks
         add_filter("manage_{$this->post_type}_posts_columns", [ $this, 'add_custom_col' ], 10, 1);
         add_action("manage_{$this->post_type}_posts_custom_column", [ $this, 'inject_custom_col_data' ], 10, 2);
+        add_filter("manage_edit-{$this->post_type}_sortable_columns", [ $this, 'add_custom_col_sorting' ], 10, 1);
+        add_action('pre_get_posts', [ $this, 'define_custom_col_sorting' ], 10, 1);
     }
 
     /**
@@ -319,18 +323,48 @@ class VTACustomOrderStatuses {
 
         switch ( $col_name ) {
             case $this->meta_color_key:
-                $color = $order_status->get_cos_color() ?? '#000';
+                $color   = $order_status->get_cos_color() ?? '#000';
                 $content = "<span class='cos-color-chip' style='background: $color;'>$color</span>";
                 $class   = 'cos-color-col';
                 break;
             case $this->meta_reorderable_key:
-                $text = $order_status->get_cos_reorderable() ? '<span class="dashicons dashicons-yes"></span>' : '';
+                $text    = $order_status->get_cos_reorderable() ? '<span class="dashicons dashicons-yes"></span>' : '';
                 $content = "<p class='cos-reorderable-check'>$text</p>";
-                $class      = 'cos-reorderable-col';
+                $class   = 'cos-reorderable-col';
                 break;
         }
 
         printf('<p class="%s">%s</p>', $class, $content);
+    }
+
+    /**
+     * Enables sorting for custom columns
+     * @param array $sortable_columns
+     * @return array
+     */
+    public function add_custom_col_sorting( array $sortable_columns ): array {
+        $sortable_columns[$this->meta_color_key]       = $this->meta_color_key;
+        $sortable_columns[$this->meta_reorderable_key] = $this->meta_reorderable_key;
+
+        return $sortable_columns;
+    }
+
+    public function define_custom_col_sorting( WP_Query $wp_query ): void {
+        $post_type = $wp_query->get('post_type');
+
+        // only run in admin Table List for VTA Holiday Posts
+        if ( is_admin() && $post_type === $this->post_type ) {
+            switch ( $wp_query->get('orderby') ) {
+                case $this->meta_color_key:
+                    $wp_query->set('meta_key', $this->meta_color_key);
+                    $wp_query->set('orderby', 'meta_value');
+                    break;
+                case $this->meta_reorderable_key:
+                    $wp_query->set('meta_key', $this->meta_reorderable_key);
+                    $wp_query->set('orderby', 'meta_value');
+                    break;
+            }
+        }
     }
 
 }

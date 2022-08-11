@@ -54,17 +54,19 @@ class VTACosSettingsManager {
         if ( is_admin() && $is_settings_page ) {
             wp_enqueue_style(
                 "{$this->plugin_name}_settings_css",
-                plugin_dir_url(__DIR__) . '/admin/css/settings.css',
+                plugin_dir_url(__DIR__) . 'admin/css/settings.css',
                 [],
                 $this->plugin_version
             );
 
             wp_enqueue_script('jquery-ui-sortable');
             wp_enqueue_script('jquery-ui-draggable');
+            wp_enqueue_style('wp-jquery-ui-dialog');
+            wp_enqueue_script('jquery-ui-dialog');
             wp_enqueue_script(
                 "{$this->plugin_name}_settings_js",
-                plugin_dir_url(__DIR__) . '/admin/js/settings.js',
-                [ 'jquery', 'jquery-ui-sortable', 'jquery-ui-draggable' ],
+                plugin_dir_url(__DIR__) . 'admin/js/settings.js',
+                [ 'jquery', 'jquery-ui-sortable', 'jquery-ui-draggable', 'jquery-ui-dialog' ],
                 $this->plugin_version,
                 true
             );

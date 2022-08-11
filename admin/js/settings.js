@@ -5,7 +5,7 @@
 
 (function ($) {
 
-    // Order Status Arrangement
+    // ORDER STATUS ARRANGEMENT UI //
 
     const sortable               = $('#statuses-sortable');
     const orderStatusArrangement = $('input#order_status_arrangement[type="hidden"]');
@@ -31,9 +31,38 @@
         }
     });
 
+    // RESET BEHAVIOR //
+
     // Reset all custom order statuses & settings to default
-    $('form#reset-settings-form').submit(function () {
-        return confirm('Are you sure you want to reset all "Order Statuses" and plugin settings?');
+    const resetDialog = $("#reset-confirm-dialog");
+    const resetForm   = $('form#reset-settings-form');
+
+    function defaultSubmit(e) {
+        resetDialog.dialog('open');
+        e.preventDefault();
+        return false;
+    }
+
+    // reset dialog settings
+    resetDialog.dialog({
+        resizable: false,
+        draggable: false,
+        autoOpen:  false,
+        height:    "auto",
+        width:     400,
+        modal:     true,
+        buttons:   {
+            "Reset": function () {
+                resetForm.unbind('submit', defaultSubmit).submit();
+                $(this).dialog("close");
+            },
+            Cancel:  function () {
+                $(this).dialog("close");
+            }
+        },
     });
+
+    // prevent default behavior
+    resetForm.submit(defaultSubmit);
 
 })(jQuery);

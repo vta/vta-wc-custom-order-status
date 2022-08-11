@@ -16,7 +16,9 @@ class VTACustomOrderStatuses {
 
     // SETTINGS var
     private VTACosSettings $settings;
-    private string         $settings_name = VTA_COS_SETTINGS_NAME;
+    private string         $settings_name                = VTA_COS_SETTINGS_NAME;
+    private string         $order_status_default_key     = ORDER_STATUS_DEFAULT_KEY;
+    private string         $order_status_arrangement_key = ORDER_STATUS_ARRANGEMENT_KEY;
 
     /**
      * Encapsulates hooks in class constructors. Ditches loader method set up by boilerplate.
@@ -289,13 +291,24 @@ class VTACustomOrderStatuses {
 
     // LIST TABLE (edit.php) //
 
+    /**
+     * Adds custom columns to List table
+     * @param array $post_columns
+     * @return array
+     */
     public function add_custom_col( array $post_columns ): array {
         // change title to "Order Status Name"
         $post_columns['title'] = 'Order Status Name';
 
+        $date = $post_columns['date']; // inset at the end...
+        unset($post_columns['date']);
+
         // add custom columns
-        $post_columns[$this->meta_color_key]       = 'Color';
-        $post_columns[$this->meta_reorderable_key] = 'Is Re-Orderable';
+        $post_columns[$this->meta_color_key]               = 'Color';
+        $post_columns[$this->meta_reorderable_key]         = 'Is Re-Orderable';
+        $post_columns[$this->order_status_arrangement_key] = 'Arrangement Number';
+
+        $post_columns['date'] = $date;
 
         return $post_columns;
     }
@@ -332,6 +345,11 @@ class VTACustomOrderStatuses {
                 $content = "<p class='cos-reorderable-check'>$text</p>";
                 $class   = 'cos-reorderable-col';
                 break;
+            case $this->order_status_arrangement_key:
+                $arrangement_num = $this->get_arrangement_num($post_id);
+                $content         = "<p class='cos-arrangement-num'>$arrangement_num</p>";
+                $class           = 'cos-arrangement-col';
+                break;
         }
 
         printf('<p class="%s">%s</p>', $class, $content);
@@ -343,12 +361,18 @@ class VTACustomOrderStatuses {
      * @return array
      */
     public function add_custom_col_sorting( array $sortable_columns ): array {
-        $sortable_columns[$this->meta_color_key]       = $this->meta_color_key;
-        $sortable_columns[$this->meta_reorderable_key] = $this->meta_reorderable_key;
+        $sortable_columns[$this->meta_color_key]               = $this->meta_color_key;
+        $sortable_columns[$this->meta_reorderable_key]         = $this->meta_reorderable_key;
+        $sortable_columns[$this->order_status_arrangement_key] = $this->order_status_arrangement_key;
 
         return $sortable_columns;
     }
 
+    /**
+     * Defines sorting query for custom columns
+     * @param WP_Query $wp_query
+     * @return void
+     */
     public function define_custom_col_sorting( WP_Query $wp_query ): void {
         $post_type = $wp_query->get('post_type');
 
@@ -363,8 +387,30 @@ class VTACustomOrderStatuses {
                     $wp_query->set('meta_key', $this->meta_reorderable_key);
                     $wp_query->set('orderby', 'meta_value');
                     break;
+                case $this->order_status_arrangement_key:
+                    $order       = $wp_query->get('order');
+                    $arrangement = $this->settings->get_arrangement();
+                    $arrangement_sorted = $order === 'asc' ? $arrangement : array_reverse($arrangement);
+                    $wp_query->set('orderby', false);
+                    $wp_query->set('order', false);
+                    $wp_query->set('post__in', $arrangement_sorted);
+                    break;
             }
         }
+    }
+
+    // PRIVATE METHODS
+
+    /**
+     * Returns index of Order Status arrangement placement..
+     * @param int $post_id
+     * @return int|null placement in arrangement OR null if not in settings (i.e drafts, trash, etc.)
+     */
+    private function get_arrangement_num( int $post_id ): ?int {
+        $arrangement = $this->settings->get_arrangement();
+        $index       = array_search($post_id, $arrangement);
+
+        return is_int($index) ? $index + 1 : null;
     }
 
 }

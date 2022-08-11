@@ -40,7 +40,7 @@ class Vta_Wc_Custom_Order_Status_Activator {
             VTA_WC_CUSTOM_ORDER_STATUS_VERSION
         );
 
-        $has_cos_posts = self::cos_posts_exists($admin->get_post_type());
+        $has_cos_posts = self::cos_posts_exists();
         if ( !$has_cos_posts ) {
             $admin->sync_default_statuses();
         }
@@ -48,14 +48,13 @@ class Vta_Wc_Custom_Order_Status_Activator {
 
     /**
      * Checks if Custom Order Status post exists yet.
-     * @param string $post_type
      * @return bool
      */
-    private static function cos_posts_exists( string $post_type ): bool {
+    private static function cos_posts_exists(): bool {
         require_once ABSPATH . '/wp-admin/includes/post.php';
 
         $args     = [
-            'post_type'   => $post_type,
+            'post_type'   => VTA_COS_CPT,
             'post_status' => 'any',
             'limit'       => -1
         ];

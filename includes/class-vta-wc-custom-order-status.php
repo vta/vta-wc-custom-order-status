@@ -121,17 +121,6 @@ class Vta_Wc_Custom_Order_Status {
      */
     private function define_admin_hooks(): void {
         $plugin_admin = new Vta_Wc_Custom_Order_Status_Admin($this->get_plugin_name(), $this->get_version());
-
-        // Custom Admin screens
-        $this->loader->add_action('admin_init', $plugin_admin, 'settings_api_init');
-
-        // Settings
-        $this->loader->add_action('admin_menu', $plugin_admin, 'register_options_page');
-
-        // Admin scripts
-        $this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts');
-
-        // Custom Post Updates
     }
 
     /**

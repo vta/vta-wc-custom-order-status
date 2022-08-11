@@ -34,8 +34,11 @@ const VTA_COS_CPT          = 'vta_order_status';
 const META_COLOR_KEY       = 'vta_cos_color';
 const META_REORDERABLE_KEY = 'vta_cos_is_reorderable';
 // Settings/Options
-const VTA_COS_SETTINGS_NAME  = 'vta_order_status_options';
-const VTA_COS_SETTINGS_PAGE = 'vta_order_status_settings';
+const VTA_COS_SETTINGS_NAME        = 'vta_order_status_options';
+const VTA_COS_SETTINGS_PAGE        = 'vta_order_status_settings';
+const VTA_COS_SETTINGS_FIELD       = 'vta_order_status_settings_fields';
+const ORDER_STATUS_DEFAULT_KEY     = 'order_status_default';
+const ORDER_STATUS_ARRANGEMENT_KEY = 'order_status_arrangement';
 
 /** Global files for plugin and/or theme usage **/
 require_once 'admin/class-vta-wc-custom-order-status-admin.php';
@@ -45,6 +48,7 @@ require_once 'models/VTACustomOrderStatus.php';
 require_once 'models/VTACosSettings.php';
 // Classes
 require_once 'classes/VTACustomOrderStatuses.php';
+require_once 'classes/VTACosSettingsManager.php';
 
 // If this file is called directly, abort.
 if ( !defined('WPINC') ) {

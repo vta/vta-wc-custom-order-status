@@ -24,6 +24,7 @@ class VTACustomOrderStatuses {
 
         add_action('admin_enqueue_scripts', [ $this, 'enqueue_scripts' ]);
         add_action('init', [ $this, 'register_custom_order_statuses' ]);
+        add_action('admin_init', [$this, 'customize_edit_screen']);
         add_action('admin_post_default_settings', [ $this, 'default_settings' ]);
         add_action("save_post_{$this->post_type}", [ $this, 'save_post' ], 11, 3);
     }

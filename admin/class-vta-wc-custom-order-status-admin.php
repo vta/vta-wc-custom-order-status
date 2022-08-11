@@ -28,8 +28,8 @@ class Vta_Wc_Custom_Order_Status_Admin {
     const META_COLOR_KEY       = META_COLOR_KEY;
     const META_REORDERABLE_KEY = META_REORDERABLE_KEY;
 
-    private string         $settings_name = VTA_COS_SETTINGS_NAME;
-    private VTACosSettings $settings;
+    private string                 $settings_name = VTA_COS_SETTINGS_NAME;
+    private VTACosSettings         $settings;
     private VTACustomOrderStatuses $order_statuses;
 
     private string $default_order_status_key     = 'order_status_default';
@@ -46,8 +46,8 @@ class Vta_Wc_Custom_Order_Status_Admin {
         $this->plugin_name = $plugin_name;
         $this->version     = $version;
 
-        $settings       = get_option($this->settings_name) ?: [];
-        $this->settings = new VTACosSettings($settings);
+        $settings             = get_option($this->settings_name) ?: [];
+        $this->settings       = new VTACosSettings($settings);
         $this->order_statuses = new VTACustomOrderStatuses($plugin_name, $version);
     }
 

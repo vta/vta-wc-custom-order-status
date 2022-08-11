@@ -123,7 +123,6 @@ class Vta_Wc_Custom_Order_Status {
         $plugin_admin = new Vta_Wc_Custom_Order_Status_Admin($this->get_plugin_name(), $this->get_version());
 
         // Custom Admin screens
-        $this->loader->add_action('admin_init', $plugin_admin, 'customize_edit_screen');
         $this->loader->add_action('admin_init', $plugin_admin, 'settings_api_init');
 
         // Settings

@@ -6,9 +6,9 @@
  */
 class VTACustomOrderStatus {
 
-    const POST_TYPE            = VTA_COS_CPT;
-    const META_COLOR_KEY       = META_COLOR_KEY;
-    const META_REORDERABLE_KEY = META_REORDERABLE_KEY;
+    private string $post_type            = VTA_COS_CPT;
+    private string $meta_color_key       = META_COLOR_KEY;
+    private string $meta_reorderable_key = META_REORDERABLE_KEY;
 
     private WP_Post $post;
 
@@ -26,42 +26,21 @@ class VTACustomOrderStatus {
             $err_msg       = "VTACustomOrderStatus::__construct() error - Invalid post. No post found for \"$post_arg_json\"";
             throw new Exception($err_msg);
 
-        } elseif ( $wp_post->post_type !== self::POST_TYPE ) {
-            $post_type = self::POST_TYPE;
-            $err_msg   = "VTACustomOrderStatus::__construct() error - Post is not of type $post_type. Post #{$post->ID} is of type {$post->post_type}";
+        } elseif ( $wp_post->post_type !== $this->post_type ) {
+            $err_msg = "VTACustomOrderStatus::__construct() error - Post is not of type {$wp_post->post_type}. Post #{$post->ID} is of type {$post->post_type}";
             throw new Exception($err_msg);
         }
 
         $this->post = $wp_post;
     }
 
-    /**
-     * Get Order Status key. Should be used with WooCommerce orders when setting statuses...
-     * @param bool $with_prefix
-     * @return string
-     * @throws Exception
-     */
-    public function get_cos_key( bool $with_prefix = false ): string {
-        $post_name = trim($this->post->post_name);
-
-        if ( empty($post_name) ) {
-            throw new Exception('VTACustomOrderStatus::get_cos_key() error. No order status key is set');
-        }
-
-        // add "wc_" for order status.
-        if ( $with_prefix ) {
-            $post_name = "wc_$post_name";
-        }
-
-        return $post_name;
-    }
 
     /**
      * Gets color associated with Order Statuses
      * @return string
      */
     public function get_cos_color(): string {
-        $color = get_post_meta($this->post->ID, self::META_COLOR_KEY, true);
+        $color = get_post_meta($this->post->ID, $this->meta_color_key, true);
         return is_string($color) ? $color : '#000';
     }
 
@@ -70,7 +49,7 @@ class VTACustomOrderStatus {
      * @return bool
      */
     public function get_cos_reorderable(): bool {
-        return get_post_meta($this->post->ID, self::META_REORDERABLE_KEY, true);
+        return (bool)get_post_meta($this->post->ID, $this->meta_reorderable_key, true);
     }
 
     /**

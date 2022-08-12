@@ -413,4 +413,13 @@ class VTACustomOrderStatuses {
         return is_int($index) ? $index + 1 : null;
     }
 
+    /**
+     * Returns if given post_id is the default Post ID
+     * @param int $post_id
+     * @return bool
+     */
+    private function is_default_order_status( int $post_id ): bool {
+        return $this->settings->get_default() === $post_id;
+    }
+
 }

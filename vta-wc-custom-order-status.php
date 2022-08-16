@@ -9,7 +9,7 @@
  * that starts the plugin.
  *
  * @link              https://jamespham.io
- * @since             0.5
+ * @since             0.6
  * @package           Vta_Wc_Custom_Order_Status
  *
  * @wordpress-plugin
@@ -49,6 +49,7 @@ require_once 'models/VTACosSettings.php';
 // Classes
 require_once 'classes/VTACustomOrderStatuses.php';
 require_once 'classes/VTACosSettingsManager.php';
+require_once 'classes/VTAWooCommerce.php';
 
 // If this file is called directly, abort.
 if ( !defined('WPINC') ) {

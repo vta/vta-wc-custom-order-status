@@ -9,14 +9,14 @@
  * that starts the plugin.
  *
  * @link              https://jamespham.io
- * @since             1.0.0
+ * @since             0.6
  * @package           Vta_Wc_Custom_Order_Status
  *
  * @wordpress-plugin
  * Plugin Name:       VTA WooCommerce Custom Order Status
  * Plugin URI:        https://jamespham.io
  * Description:       This is a short description of what the plugin does. It's displayed in the WordPress admin area.
- * Version:           1.0.0
+ * Version:           0.5
  * Author:            James Pham
  * Author URI:        https://jamespham.io
  * License:           GPL-2.0+
@@ -25,21 +25,36 @@
  * Domain Path:       /languages
  */
 
+/** PLUGIN CONSTANTS **/
+// Plugin
+const VTA_WC_CUSTOM_ORDER_STATUS_VERSION = '0.6';
+const VTA_WC_COS_PLUGIN_NAME             = 'vta-wc-custom-order-status';
+// Post
+const VTA_COS_CPT          = 'vta_order_status';
+const META_COLOR_KEY       = 'vta_cos_color';
+const META_REORDERABLE_KEY = 'vta_cos_is_reorderable';
+// Settings/Options
+const VTA_COS_SETTINGS_NAME        = 'vta_order_status_options';
+const VTA_COS_SETTINGS_PAGE        = 'vta_order_status_settings';
+const VTA_COS_SETTINGS_FIELD       = 'vta_order_status_settings_fields';
+const ORDER_STATUS_DEFAULT_KEY     = 'order_status_default';
+const ORDER_STATUS_ARRANGEMENT_KEY = 'order_status_arrangement';
+
+/** Global files for plugin and/or theme usage **/
 require_once 'admin/class-vta-wc-custom-order-status-admin.php';
 require_once 'utils/common.php';
+// Models
+require_once 'models/VTACustomOrderStatus.php';
+require_once 'models/VTACosSettings.php';
+// Classes
+require_once 'classes/VTACustomOrderStatuses.php';
+require_once 'classes/VTACosSettingsManager.php';
+require_once 'classes/VTAWooCommerce.php';
 
 // If this file is called directly, abort.
 if ( !defined('WPINC') ) {
     die;
 }
-
-/**
- * Currently plugin version.
- * Start at version 1.0.0 and use SemVer - https://semver.org
- * Rename this for your plugin and update it as you release new versions.
- */
-const VTA_WC_CUSTOM_ORDER_STATUS_VERSION = '1.0.0';
-const VTA_WC_COS_PLUGIN_NAME             = 'vta-wc-custom-order-status';
 
 /**
  * The code that runs during plugin activation.
@@ -83,12 +98,3 @@ function run_vta_wc_custom_order_status(): void {
 }
 
 run_vta_wc_custom_order_status();
-
-/**
- * 1. init - register CPT separately from plugin execution
- * 2. plugins_loaded - allow WC & WP core to load first (dependencies)
- * 3. TODO - redo WC dependencies
- */
-//add_action('init', ['Vta_Wc_Custom_Order_Status_Admin', 'register_custom_order_statuses'], 10);
-//add_action('admin_init', ['Vta_Wc_Custom_Order_Status_Admin', 'customize_edit_screen'], 10);
-//add_action('wp', 'run_vta_wc_custom_order_status', 99);

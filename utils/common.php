@@ -1,6 +1,6 @@
 <?php
 
-if ( !function_exists('file_cache') ) {
+if ( !function_exists('get_query_params') ) {
     /**
      * Returns path and query parameter(s) of the current request URL
      * @return array

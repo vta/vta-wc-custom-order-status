@@ -1,0 +1,39 @@
+/* Color Column */
+td.vta_cos_color.column-vta_cos_color {
+    vertical-align: middle;
+}
+
+span.cos-color-chip {
+    display: inline-block;
+    padding: 0.5rem;
+    border-radius: 5px;
+    font-weight: 600;
+    width: 60px;
+    text-align: center;
+}
+
+span.cos-color-chip-text {
+    text-transform: uppercase;
+    mix-blend-mode: color-burn;
+}
+
+/* Reorderable Column */
+td.vta_cos_is_reorderable.column-vta_cos_is_reorderable {
+    vertical-align: middle;
+}
+
+p.cos-reorderable-check > span.dashicons.dashicons-yes {
+    font-size: 1.5rem;
+    color: #0a4b78;
+    font-weight: 500;
+}
+
+/* Arrangement Number */
+td.order_status_arrangement.column-order_status_arrangement {
+    vertical-align: middle;
+}
+
+p.cos-arrangement-num {
+    font-size: 1.1rem !important;
+    font-weight: 500;
+}

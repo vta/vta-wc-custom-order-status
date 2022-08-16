@@ -33,3 +33,31 @@ span.dashicons-sort {
     color: #0a6aa1;
 }
 
+div.ui-dialog-titlebar {
+    background: #29588C;
+    text-align: center;
+}
+
+span.ui-dialog-title,
+button.ui-button.ui-corner-all.ui-widget.ui-button-icon-only.ui-dialog-titlebar-close {
+    color: #fff;
+}
+
+div.ui-dialog-buttonpane {
+    background: #F4F4F4;
+}
+
+div.ui-dialog-buttonset > button.ui-button:first-child {
+    background: #ff8f90;
+}
+
+div.ui-dialog-buttonset > button.ui-button:first-child:hover {
+    background: #FF6263;
+}
+
+button.ui-button:disabled[disabled].ui-button-icon-only.ui-dialog-titlebar-close {
+    color: #fff !important;
+    border: none;
+    background: #29588C !important;
+    text-shadow: none !important;
+}

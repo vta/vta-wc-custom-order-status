@@ -17,7 +17,6 @@ class VTACustomOrderStatuses {
     // SETTINGS var
     private VTACosSettings $settings;
     private string         $settings_name                = VTA_COS_SETTINGS_NAME;
-    private string         $order_status_default_key     = ORDER_STATUS_DEFAULT_KEY;
     private string         $order_status_arrangement_key = ORDER_STATUS_ARRANGEMENT_KEY;
 
     /**

@@ -45,6 +45,7 @@ class VTACustomOrderStatuses {
         add_action("manage_{$this->post_type}_posts_custom_column", [ $this, 'inject_custom_col_data' ], 10, 2);
         add_filter("manage_edit-{$this->post_type}_sortable_columns", [ $this, 'add_custom_col_sorting' ], 10, 1);
         add_action('pre_get_posts', [ $this, 'define_custom_col_sorting' ], 10, 1);
+        add_filter('the_title', [ $this, 'add_default_text' ], 10, 2);
     }
 
     /**
@@ -72,6 +73,17 @@ class VTACustomOrderStatuses {
                 [ 'jquery' ],
                 $this->plugin_version,
                 true
+            );
+        }
+
+        // List Table page
+        $is_list_page = preg_match('/edit\.php/', $path) || in_array($this->post_type, $query_params);
+        if ( is_admin() && $is_list_page ) {
+            wp_enqueue_style(
+                "{$this->plugin_name}_edit_css",
+                plugin_dir_url(__DIR__) . 'admin/css/edit.css',
+                [],
+                $this->plugin_version
             );
         }
     }
@@ -337,7 +349,7 @@ class VTACustomOrderStatuses {
         switch ( $col_name ) {
             case $this->meta_color_key:
                 $color   = $order_status->get_cos_color() ?? '#000';
-                $content = "<span class='cos-color-chip' style='background: $color;'>$color</span>";
+                $content = "<span class='cos-color-chip' style='background: $color;'><span class='cos-color-chip-text'>$color</span></span>";
                 $class   = 'cos-color-col';
                 break;
             case $this->meta_reorderable_key:
@@ -388,8 +400,8 @@ class VTACustomOrderStatuses {
                     $wp_query->set('orderby', 'meta_value');
                     break;
                 case $this->order_status_arrangement_key:
-                    $order       = $wp_query->get('order');
-                    $arrangement = $this->settings->get_arrangement();
+                    $order              = $wp_query->get('order');
+                    $arrangement        = $this->settings->get_arrangement();
                     $arrangement_sorted = $order === 'asc' ? $arrangement : array_reverse($arrangement);
                     $wp_query->set('orderby', false);
                     $wp_query->set('order', false);
@@ -397,6 +409,29 @@ class VTACustomOrderStatuses {
                     break;
             }
         }
+    }
+
+    /**
+     * Appends Default text to target Custom Order Status
+     * @param $post_title
+     * @param $post_id
+     * @return void
+     */
+    public function add_default_text( $post_title, $post_id ) {
+        $post = get_post($post_id);
+        list('path' => $path) = get_query_params();
+
+        // List Table only && is default order status...
+        if (
+            is_admin() &&
+            preg_match('/edit\.php/', $path) &&
+            $post->post_type === VTA_COS_CPT &&
+            $this->is_default_order_status($post_id)
+        ) {
+            $post_title = "$post_title &mdash; DEFAULT";
+        }
+
+        return $post_title;
     }
 
     // PRIVATE METHODS

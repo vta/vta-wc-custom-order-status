@@ -217,7 +217,7 @@ class VTACustomOrderStatuses {
             </tr>
             <tr>
                 <td>
-                    <label for="reorderable-checkbox">Is Reordable?</label>
+                    <label for="reorderable-checkbox">Is Reorderable?</label>
                 </td>
                 <td>
                     <input type="checkbox" id="reorderable-checkbox"

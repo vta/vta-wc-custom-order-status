@@ -387,9 +387,10 @@ class VTACustomOrderStatuses {
      */
     public function define_custom_col_sorting( WP_Query $wp_query ): void {
         $post_type = $wp_query->get('post_type');
+        list('path' => $path) = get_query_params();
 
         // only run in admin Table List for VTA Holiday Posts
-        if ( is_admin() && $post_type === $this->post_type ) {
+        if ( is_admin() && $post_type === $this->post_type && preg_match('/edit\.php/', $path) ) {
             switch ( $wp_query->get('orderby') ) {
                 case $this->meta_color_key:
                     $wp_query->set('meta_key', $this->meta_color_key);
@@ -403,8 +404,7 @@ class VTACustomOrderStatuses {
                     $order              = $wp_query->get('order');
                     $arrangement        = $this->settings->get_arrangement();
                     $arrangement_sorted = $order === 'asc' ? $arrangement : array_reverse($arrangement);
-                    $wp_query->set('orderby', false);
-                    $wp_query->set('order', false);
+                    $wp_query->set('orderby', 'post__in');
                     $wp_query->set('post__in', $arrangement_sorted);
                     break;
             }

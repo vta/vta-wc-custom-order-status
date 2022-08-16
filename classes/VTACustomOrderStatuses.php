@@ -45,6 +45,7 @@ class VTACustomOrderStatuses {
         add_filter("manage_edit-{$this->post_type}_sortable_columns", [ $this, 'add_custom_col_sorting' ], 10, 1);
         add_action('pre_get_posts', [ $this, 'define_custom_col_sorting' ], 10, 1);
         add_filter('the_title', [ $this, 'add_default_text' ], 10, 2);
+        add_filter("views_edit-{$this->post_type}", [ $this, 'add_reorderable_quicklink' ], 10, 1);
     }
 
     /**
@@ -386,10 +387,21 @@ class VTACustomOrderStatuses {
      */
     public function define_custom_col_sorting( WP_Query $wp_query ): void {
         $post_type = $wp_query->get('post_type');
-        list('path' => $path) = get_query_params();
+        list('path' => $path, 'query_params' => $query_params) = get_query_params();
 
         // only run in admin Table List for VTA Holiday Posts
         if ( is_admin() && $post_type === $this->post_type && preg_match('/edit\.php/', $path) ) {
+            // "Reorderable" quicklink
+            if ( array_key_exists('postmeta', $query_params) && in_array($this->meta_reorderable_key, $query_params) ) {
+                $wp_query->set('meta_query', [
+                    [
+                        'key'     => $this->meta_reorderable_key,
+                        'value'   => true,
+                        'compare' => '='
+                    ]
+                ]);
+            }
+
             switch ( $wp_query->get('orderby') ) {
                 case $this->meta_color_key:
                     $wp_query->set('meta_key', $this->meta_color_key);
@@ -433,6 +445,35 @@ class VTACustomOrderStatuses {
         return $post_title;
     }
 
+    /**
+     * Inserts Reorderable after "publish" quick link.
+     * @param string[] $views
+     * @return string[]
+     */
+    public function add_reorderable_quicklink( array $views ): array {
+        list('query_params' => $query_params) = get_query_params();
+
+        $len = count($views);
+        $i   = 0;
+        foreach ( $views as $key => $val ) {
+            if ( $key === 'publish' ) {
+                // build link
+                $active_class = in_array($this->meta_reorderable_key, $query_params) ? "class='current'" : null;
+                $reorderable_count = $this->get_reorderable_count();
+                $html              = "<a $active_class href='edit.php?post_type={$this->post_type}&#038postmeta={$this->meta_reorderable_key}'>Reorderable <span class='count'>($reorderable_count)</span></a>";
+                $reorderable_view  = [ 'reorderable' => $html ];
+
+                // insert after publish
+                $views_a = array_slice($views, 0, $i + 1);
+                $views_b = array_slice($views, $i + 1, $len);
+                $views   = $views_a + $reorderable_view + $views_b;
+                break;
+            }
+            $i++;
+        }
+        return $views;
+    }
+
     // PRIVATE METHODS
 
     /**
@@ -454,6 +495,27 @@ class VTACustomOrderStatuses {
      */
     private function is_default_order_status( int $post_id ): bool {
         return $this->settings->get_default() === $post_id;
+    }
+
+    /**
+     * Returns number of reorderable custom order status regardless of post status.
+     * @return int
+     */
+    private function get_reorderable_count(): int {
+        $wp_query = new WP_Query([
+            'post_type'     => $this->post_type,
+            'post_per_page' => -1,
+            'post_status'   => get_post_stati(),
+            'meta_query'    => [
+                [
+                    'key'     => $this->meta_reorderable_key,
+                    'value'   => true,
+                    'compare' => '='
+                ]
+            ]
+        ]);
+
+        return $wp_query->post_count;
     }
 
 }

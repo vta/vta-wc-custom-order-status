@@ -13,6 +13,7 @@ span.cos-color-chip {
 }
 
 span.cos-color-chip-text {
+    text-transform: uppercase;
     mix-blend-mode: color-burn;
 }
 

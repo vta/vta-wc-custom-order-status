@@ -48,6 +48,7 @@ _Beware: Deleting the plugin from the WP CLI or admin dashboard will delete all 
 | **Options Key**            | **"Default" Array Key** | **"Arrangement" Array Key** |
 |----------------------------|-------------------------|-----------------------------|
 | `vta_order_status_options` | `order_status_default`  | `order_status_arrangement`  |
+
 _**NOTE**: "Default" & "Arrangement" keys are used on the resulting array from `get_options('vta_order_status_options')`._
 
 ---

@@ -103,15 +103,25 @@ class VTAWooCommerce {
      * @return array
      */
     public function update_quicklinks( array $views ): array {
+        // save for later insertion after sorting
+        $all_html = $views['all'];
+        unset($views['all']);
 
+        // pending orders
         $html = sprintf(
             '<a href="edit.php?post_status=pending-orders&#038;post_type=shop_order">Pending Orders <span class="count">(%d)</span></a>',
             $this->get_pending_orders_count()
         );
 
-        $views['pending-orders'] = $html;
+        // add before all other default statuses (will be placed towards the end after sorting)
+        $views = [ 'pending-orders' => $html ] + $views;
+        $views = $this->sort_order_statuses($views);
 
-        return $views;
+        // re-insert all view at the beginning
+        $views = [ 'all' => $all_html ] + $views;
+
+        // remove all empty values
+        return array_filter($views, fn( $link ) => is_string($link));
     }
 
     // QUERY MODIFICATIONS //

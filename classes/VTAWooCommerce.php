@@ -27,6 +27,9 @@ class VTAWooCommerce {
     private string         $post_type = VTA_COS_CPT;
     private VTACosSettings $settings;
 
+    /** @var VTACustomOrderStatus[] */
+    private array $vta_cos;
+
     /**
      * @param VTACosSettings $settings
      * @param string $plugin_name
@@ -37,11 +40,13 @@ class VTAWooCommerce {
         $this->plugin_version = $plugin_version;
 
         $this->settings = $settings;
+        $this->vta_cos = $this->get_cos();
 
         /**
          * Need to run this hook first before other filter methods are ran in the Orders page
          */
-        add_action('pre_get_posts', [ $this, 'query_include_deprecated' ]);
+//        add_action('pre_get_posts', [ $this, 'query_include_deprecated' ], 10, 1);
+        add_action('pre_get_posts', [ $this, 'query_pending_orders' ], 10, 1);
         add_filter('woocommerce_register_shop_order_post_statuses', [ $this, 'append_vta_cos' ], 10, 1);
         add_filter('wc_order_statuses', [ $this, 'register_vta_cos' ], 10, 1);
         add_filter("views_edit-{$this->shop_post_type}", [ $this, 'update_quicklinks' ], 10, 1);
@@ -58,7 +63,7 @@ class VTAWooCommerce {
      */
     public function append_vta_cos( array $post_statuses ): array {
         $post_status_keys   = array_keys($post_statuses);
-        $vta_order_statuses = $this->get_cos();
+        $vta_order_statuses = $this->vta_cos;
 
         foreach ( $vta_order_statuses as $vta_order_status ) {
             // if not defined by WC yet,
@@ -83,7 +88,7 @@ class VTAWooCommerce {
      */
     public function register_vta_cos( array $order_statuses ): array {
         $post_status_keys   = array_keys($order_statuses);
-        $vta_order_statuses = $this->get_cos();
+        $vta_order_statuses = $this->vta_cos;
 
         foreach ( $vta_order_statuses as $vta_order_status ) {
             // if not defined by WC yet,
@@ -131,11 +136,11 @@ class VTAWooCommerce {
      * @param WP_Query $wp_query
      * @return void
      */
-    public function query_include_deprecated( WP_Query $wp_query ) {
+    public function query_include_deprecated( WP_Query $wp_query ): void {
         [ 'path' => $path, 'query_params' => $query_params ] = get_query_params();
 
         // Orders page for all account
-        $is_my_account = preg_match('/my-account\/orders/', $path);
+        $is_my_account = (bool)preg_match('/my-account\/orders/', $path);
 
         // list table page for all WC orders
         $is_all_orders  = count($query_params) === 1;
@@ -146,8 +151,27 @@ class VTAWooCommerce {
          * - My Account Orders Page OR WC Orders List Table (all)
          * - post type is "shop_order"
          */
-        if ( ($is_my_account || $is_edit_orders) && !isset($wp_query_args['pending_query']) ) {
+        if ( $is_my_account || $is_edit_orders ) {
+            error_log('should not run');
             $wp_query->set('post_status', 'any');
+        }
+    }
+
+    public function query_pending_orders( WP_Query $wp_query ): void {
+        [ 'path' => $path, 'query_params' => $query_params ] = get_query_params();
+
+        $is_edit_orders = preg_match('/edit\.php/', $path) && in_array($this->shop_post_type, $query_params);
+
+//        $debug = $wp_query->get('post_status');
+
+        if (
+            is_admin() && $is_edit_orders &&
+            in_array('pending-orders', $query_params)
+        ) {
+            error_log('filtering pending orders...');
+            remove_action('pre_get_posts', [ $this, 'query_pending_orders' ], 11);
+            $wp_query->set('post_status', $this->get_pending_cos_keys());
+            add_action('pre_get_posts', [ $this, 'query_pending_orders' ], 11, 1);
         }
     }
 
@@ -221,7 +245,7 @@ class VTAWooCommerce {
             'failed'
         ];
 
-        $vta_cos      = $this->get_cos();
+        $vta_cos      = $this->vta_cos;
         $filtered_cos = array_filter(
             $vta_cos,
             fn( VTACustomOrderStatus $order_status ) => !$order_status->get_cos_reorderable() && !in_array($order_status->get_cos_key(), $other_non_pending_statuses)

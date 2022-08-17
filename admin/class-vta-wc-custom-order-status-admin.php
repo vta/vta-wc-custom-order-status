@@ -23,6 +23,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
     private string                 $settings_name = VTA_COS_SETTINGS_NAME;
     private VTACustomOrderStatuses $order_statuses;
     private VTACosSettingsManager  $settings_manager;
+    private VTAWooCommerce         $vta_woocommerce;
 
     /**
      * Initialize the class and set its properties.
@@ -38,6 +39,7 @@ class Vta_Wc_Custom_Order_Status_Admin {
 
         $this->settings_manager = new VTACosSettingsManager($plugin_name, $version, $settings);
         $this->order_statuses   = new VTACustomOrderStatuses($plugin_name, $version, $settings);
+        $this->vta_woocommerce  = new VTAWooCommerce($plugin_name, $version, $settings);
     }
 
     /**

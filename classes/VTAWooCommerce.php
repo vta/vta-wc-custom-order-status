@@ -24,15 +24,19 @@ class VTAWooCommerce {
     private string $shop_post_type = 'shop_order';
 
     // VTA COS VARS
-    private string $post_type = VTA_COS_CPT;
+    private string         $post_type = VTA_COS_CPT;
+    private VTACosSettings $settings;
 
     /**
+     * @param VTACosSettings $settings
      * @param string $plugin_name
      * @param string $plugin_version
      */
-    public function __construct( string $plugin_name, string $plugin_version ) {
+    public function __construct( string $plugin_name, string $plugin_version, VTACosSettings $settings ) {
         $this->plugin_name    = $plugin_name;
         $this->plugin_version = $plugin_version;
+
+        $this->settings = $settings;
 
         /**
          * Need to run this hook first before other filter methods are ran in the Orders page
@@ -115,7 +119,7 @@ class VTAWooCommerce {
             }
         }
 
-        return $order_statuses;
+        return $this->sort_order_statuses($order_statuses);
     }
 
     // PRIVATE METHODS //
@@ -136,6 +140,23 @@ class VTAWooCommerce {
 
         } catch ( Exception $e ) {
             error_log("VTAWooCommerce::get_cos() error. Could not convert post status VTA Custom Order Statuses. - $e");
+            return [];
+        }
+    }
+
+    /**
+     * Sorts order statuses based on plugin settings arrangement field.
+     * @param array $order_statuses
+     * @return array
+     */
+    private function sort_order_statuses( array $order_statuses ): array {
+        $arrangement_ids = $this->settings->get_arrangement();
+
+        try {
+            $arrangement_cos_keys = array_map(fn( int $post_id ) => (new VTACustomOrderStatus($post_id))->get_cos_key(true), $arrangement_ids);
+            return array_replace(array_flip($arrangement_cos_keys), $order_statuses);
+        } catch ( Exception $e ) {
+            error_log("VTAWooCommerce::sort_order_status error. Could not sort custom order statuses - $e");
             return [];
         }
     }

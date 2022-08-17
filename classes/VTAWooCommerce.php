@@ -20,8 +20,11 @@ class VTAWooCommerce {
         'wc-pony'      => 'Pony'
     ];
 
-    // POST VARS
+    // WC VARS
     private string $shop_post_type = 'shop_order';
+
+    // VTA COS VARS
+    private string $post_type = VTA_COS_CPT;
 
     /**
      * @param string $plugin_name
@@ -35,6 +38,8 @@ class VTAWooCommerce {
          * Need to run this hook first before other filter methods are ran in the Orders page
          */
         add_action('pre_get_posts', [ $this, 'query_include_deprecated' ], 11, 1);
+        add_filter('woocommerce_register_shop_order_post_statuses', [ $this, 'append_vta_cos' ], 10, 1);
+        add_filter('wc_order_statuses', [ $this, 'register_vta_cos' ], 10, 1);
     }
 
     /**
@@ -42,7 +47,7 @@ class VTAWooCommerce {
      * @return void
      */
     public function query_include_deprecated( WP_Query $wp_query ): void {
-        list('path' => $path, 'query_params' => $query_params) = get_query_params();
+        [ 'path' => $path, 'query_params' => $query_params ] = get_query_params();
 
         // Orders page for all account
         $is_my_account = preg_match('/my-account\/orders/', $path);
@@ -64,6 +69,74 @@ class VTAWooCommerce {
             ((is_array($post_type) && in_array($this->shop_post_type, $post_type)) || $post_type === $this->shop_post_type)
         ) {
             $wp_query->set('post_status', 'any');
+        }
+    }
+
+    /**
+     * Adds our custom order statuses to WC post status via WC filter.
+     * @param array $post_statuses
+     * @return array array of order statuses to be registered as post statuses
+     * @see https://woocommerce.github.io/code-reference/files/woocommerce-includes-class-wc-post-types.html#source-view.560
+     * @see https://developer.wordpress.org/reference/functions/register_post_type/
+     */
+    public function append_vta_cos( array $post_statuses ): array {
+        $post_status_keys   = array_keys($post_statuses);
+        $vta_order_statuses = $this->get_cos();
+
+        foreach ( $vta_order_statuses as $vta_order_status ) {
+            // if not defined by WC yet,
+            if ( !in_array($vta_order_status->get_cos_key(true), $post_status_keys) ) {
+                $post_statuses[$vta_order_status->get_cos_key(true)] = [
+                    'label'                     => _x($vta_order_status->get_cos_name(), 'Order status', 'woocommerce'),
+                    'public'                    => false,
+                    'exclude_from_search'       => false,
+                    'show_in_admin_all_list'    => true,
+                    'show_in_admin_status_list' => true,
+                    'label_count'               => _n_noop("{$vta_order_status->get_cos_name()} <span class='count'>(%s)</span>", "{$vta_order_status->get_cos_name()} <span class='count'>(%s)</span>", 'woocommerce'),
+                ];
+            }
+        }
+
+        return $post_statuses;
+    }
+
+    /**
+     * Adds to order status to List of WC Order Statuses
+     * @return void
+     */
+    public function register_vta_cos( array $order_statuses ): array {
+        $post_status_keys   = array_keys($order_statuses);
+        $vta_order_statuses = $this->get_cos();
+
+        foreach ( $vta_order_statuses as $vta_order_status ) {
+            // if not defined by WC yet,
+            if ( !in_array($vta_order_status->get_cos_key(true), $post_status_keys) ) {
+                $order_statuses[$vta_order_status->get_cos_key(true)] = $vta_order_status->get_cos_name();
+            }
+        }
+
+        return $order_statuses;
+    }
+
+    // PRIVATE METHODS //
+
+    /**
+     * Returns all available Order Statuses
+     * @return VTACustomOrderStatus[]
+     */
+    private function get_cos(): array {
+        try {
+            $wp_query       = new WP_Query([
+                'post_type'      => $this->post_type,
+                'post_status'    => 'publish',
+                'posts_per_page' => -1
+            ]);
+            $order_statuses = $wp_query->posts;
+            return array_map(fn( $post ) => new VTACustomOrderStatus($post), $order_statuses);
+
+        } catch ( Exception $e ) {
+            error_log("VTAWooCommerce::get_cos() error. Could not convert post status VTA Custom Order Statuses. - $e");
+            return [];
         }
     }
 

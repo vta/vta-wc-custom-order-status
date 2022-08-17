@@ -41,40 +41,13 @@ class VTAWooCommerce {
         /**
          * Need to run this hook first before other filter methods are ran in the Orders page
          */
-        add_action('pre_get_posts', [ $this, 'query_include_deprecated' ], 11, 1);
+        add_action('pre_get_posts', [ $this, 'query_include_deprecated' ]);
         add_filter('woocommerce_register_shop_order_post_statuses', [ $this, 'append_vta_cos' ], 10, 1);
         add_filter('wc_order_statuses', [ $this, 'register_vta_cos' ], 10, 1);
+        add_filter("views_edit-{$this->shop_post_type}", [ $this, 'update_quicklinks' ], 10, 1);
     }
 
-    /**
-     * @param WP_Query $wp_query
-     * @return void
-     */
-    public function query_include_deprecated( WP_Query $wp_query ): void {
-        [ 'path' => $path, 'query_params' => $query_params ] = get_query_params();
-
-        // Orders page for all account
-        $is_my_account = preg_match('/my-account\/orders/', $path);
-
-        // list table page for all WC orders
-        $is_all_orders  = count($query_params) === 1;
-        $is_edit_orders = $is_all_orders && preg_match('/edit\.php/', $path) && in_array($this->shop_post_type, $query_params);
-
-        /** @var string| string[] $post_type "shop_order" or "shop_order_refund" */
-        $post_type = $wp_query->get('post_type');
-
-        /**
-         * Conditions:
-         * - My Account Orders Page OR WC Orders List Table (all)
-         * - post type is "shop_order"
-         */
-        if (
-            ($is_my_account || $is_edit_orders) &&
-            ((is_array($post_type) && in_array($this->shop_post_type, $post_type)) || $post_type === $this->shop_post_type)
-        ) {
-            $wp_query->set('post_status', 'any');
-        }
-    }
+    // POST STATUS / ORDER STATUS REGISTRATION CALLBACKS //
 
     /**
      * Adds our custom order statuses to WC post status via WC filter.
@@ -122,6 +95,52 @@ class VTAWooCommerce {
         return $this->sort_order_statuses($order_statuses);
     }
 
+    // WC List Table //
+
+    /**
+     * Adds "Pending Orders" view
+     * @param array $views
+     * @return array
+     */
+    public function update_quicklinks( array $views ): array {
+
+        $html = sprintf(
+            '<a href="edit.php?post_status=pending-orders&#038;post_type=shop_order">Pending Orders <span class="count">(%d)</span></a>',
+            $this->get_pending_orders_count()
+        );
+
+        $views['pending-orders'] = $html;
+
+        return $views;
+    }
+
+    // QUERY MODIFICATIONS //
+
+    /**
+     * Includes any deprecated order statuses to be queried on get all pages.
+     * @param WP_Query $wp_query
+     * @return void
+     */
+    public function query_include_deprecated( WP_Query $wp_query ) {
+        [ 'path' => $path, 'query_params' => $query_params ] = get_query_params();
+
+        // Orders page for all account
+        $is_my_account = preg_match('/my-account\/orders/', $path);
+
+        // list table page for all WC orders
+        $is_all_orders  = count($query_params) === 1;
+        $is_edit_orders = $is_all_orders && preg_match('/edit\.php/', $path) && in_array($this->shop_post_type, $query_params);
+
+        /**
+         * Conditions:
+         * - My Account Orders Page OR WC Orders List Table (all)
+         * - post type is "shop_order"
+         */
+        if ( ($is_my_account || $is_edit_orders) && !isset($wp_query_args['pending_query']) ) {
+            $wp_query->set('post_status', 'any');
+        }
+    }
+
     // PRIVATE METHODS //
 
     /**
@@ -159,6 +178,46 @@ class VTAWooCommerce {
             error_log("VTAWooCommerce::sort_order_status error. Could not sort custom order statuses - $e");
             return [];
         }
+    }
+
+    /**
+     * Gets count of custom order statuses
+     * @return int
+     */
+    private function get_pending_orders_count(): int {
+        $non_reorderable_cos = $this->get_pending_cos_keys();
+        $orders              = wc_get_orders([ 'status' => $non_reorderable_cos ]);
+
+        // manually filter orders since pre_get_posts interferes with count
+        $filtered_orders = array_filter(
+            $orders,
+            fn( WC_Order $wc_order ) => in_array($wc_order->get_status(), $non_reorderable_cos)
+        );
+
+        return count($filtered_orders);
+    }
+
+    /**
+     * Returns all Custom Order Status without "Reoderable" abilities.
+     * @param bool $with_prefix adds 'wc-' to order status keys
+     * @return array
+     */
+    private function get_pending_cos_keys( bool $with_prefix = false ): array {
+        // hard-coded from WC default statuses...
+        $other_non_pending_statuses = [
+            'cancelled',
+            'pending',
+            'refunded',
+            'failed'
+        ];
+
+        $vta_cos      = $this->get_cos();
+        $filtered_cos = array_filter(
+            $vta_cos,
+            fn( VTACustomOrderStatus $order_status ) => !$order_status->get_cos_reorderable() && !in_array($order_status->get_cos_key(), $other_non_pending_statuses)
+        );
+
+        return array_values(array_map(fn( VTACustomOrderStatus $order_status ) => $order_status->get_cos_key($with_prefix), $filtered_cos));
     }
 
 }

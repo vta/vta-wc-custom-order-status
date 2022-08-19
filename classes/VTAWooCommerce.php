@@ -121,13 +121,13 @@ class VTAWooCommerce {
         // pending orders
         $html = sprintf(
             '<a href="edit.php?post_status=pending-orders&#038;post_type=shop_order" %s>Pending Orders <span class="count">(%d)</span></a>',
-                ($query_params['post_status'] ?? null) === 'pending-orders' ? 'class="active"' : '',
+                ($query_params['post_status'] ?? null) === 'pending-orders' ? 'class="current" aria-current="page"' : '',
             $this->get_pending_orders_count()
         );
 
-        // add before all other default statuses (will be placed towards the end after sorting)
-        $views = [ 'pending-orders' => $html ] + $views;
+        // add before all other default statuses
         $views = $this->sort_order_statuses($views);
+        $views = [ 'pending-orders' => $html ] + $views;
 
         // re-insert all view at the beginning
         $views = [ 'all' => $all_html ] + $views;

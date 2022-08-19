@@ -54,6 +54,44 @@ class VTAWooCommerce {
         add_filter('woocommerce_register_shop_order_post_statuses', [ $this, 'append_vta_cos' ], 10, 1);
         add_filter('wc_order_statuses', [ $this, 'register_vta_cos' ], 10, 1);
         add_filter("views_edit-{$this->shop_post_type}", [ $this, 'update_quicklinks' ], 10, 1);
+        add_action('admin_head', [ $this, 'add_status_col_styles' ]);
+    }
+
+    // STYLES //
+
+    /**
+     * Applies specific styles for custom order status colors.
+     * @return void
+     */
+    public function add_status_col_styles(): void {
+        [ 'query_params' => $query_params, 'path' => $path ] = get_query_params();
+
+        if (
+            is_admin() &&
+            in_array($this->shop_post_type, $query_params) &&
+            preg_match('/edit\.php/', $path)
+        ) {
+            error_log('in here');
+            ?>
+            <style>
+                <?php foreach ($this->vta_cos as $order_status) {
+                    $status = $order_status->get_cos_key();
+                    $color = $order_status->get_cos_color();
+
+                    $css_rule = <<<CSS
+                        mark.order-status.status-$status {
+                            background: $color;
+                            color: #fff;
+                            font-weight: 500;
+                            text-shadow: 1px 1px rgba(0,0,0,0.5);
+                        }
+                    CSS;
+
+                    echo $css_rule;
+                }?>
+            </style>
+            <?php
+        }
     }
 
     // POST STATUS / ORDER STATUS REGISTRATION CALLBACKS //
@@ -121,7 +159,7 @@ class VTAWooCommerce {
         // pending orders
         $html = sprintf(
             '<a href="edit.php?post_status=pending-orders&#038;post_type=shop_order" %s>Pending Orders <span class="count">(%d)</span></a>',
-                ($query_params['post_status'] ?? null) === 'pending-orders' ? 'class="current" aria-current="page"' : '',
+            ($query_params['post_status'] ?? null) === 'pending-orders' ? 'class="current" aria-current="page"' : '',
             $this->get_pending_orders_count()
         );
 

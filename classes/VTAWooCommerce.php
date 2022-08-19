@@ -51,47 +51,15 @@ class VTAWooCommerce {
          */
         add_action('pre_get_posts', [ $this, 'query_include_deprecated' ], 10, 1);
         add_action('pre_get_posts', [ $this, 'query_pending_orders' ], 10, 1);
+
+        // Register Custom Order Status to WC
         add_filter('woocommerce_register_shop_order_post_statuses', [ $this, 'append_vta_cos' ], 10, 1);
         add_filter('wc_order_statuses', [ $this, 'register_vta_cos' ], 10, 1);
+
+        // WC List Table Customization
         add_filter("views_edit-{$this->shop_post_type}", [ $this, 'update_quicklinks' ], 10, 1);
         add_action('admin_head', [ $this, 'add_status_col_styles' ]);
-    }
-
-    // STYLES //
-
-    /**
-     * Applies specific styles for custom order status colors.
-     * @return void
-     */
-    public function add_status_col_styles(): void {
-        [ 'query_params' => $query_params, 'path' => $path ] = get_query_params();
-
-        if (
-            is_admin() &&
-            in_array($this->shop_post_type, $query_params) &&
-            preg_match('/edit\.php/', $path)
-        ) {
-            error_log('in here');
-            ?>
-            <style>
-                <?php foreach ($this->vta_cos as $order_status) {
-                    $status = $order_status->get_cos_key();
-                    $color = $order_status->get_cos_color();
-
-                    $css_rule = <<<CSS
-                        mark.order-status.status-$status {
-                            background: $color;
-                            color: #fff;
-                            font-weight: 500;
-                            text-shadow: 1px 1px rgba(0,0,0,0.5);
-                        }
-                    CSS;
-
-                    echo $css_rule;
-                }?>
-            </style>
-            <?php
-        }
+        add_filter("bulk_actions-edit-{$this->shop_post_type}", [ $this, 'update_custom_bulk_actions' ], 11, 1);
     }
 
     // POST STATUS / ORDER STATUS REGISTRATION CALLBACKS //
@@ -145,6 +113,40 @@ class VTAWooCommerce {
     // WC List Table //
 
     /**
+     * Applies specific styles for custom order status colors.
+     * @return void
+     */
+    public function add_status_col_styles(): void {
+        [ 'query_params' => $query_params, 'path' => $path ] = get_query_params();
+
+        if (
+            is_admin() &&
+            in_array($this->shop_post_type, $query_params) &&
+            preg_match('/edit\.php/', $path)
+        ) {
+            ?>
+            <style>
+                <?php foreach ($this->vta_cos as $order_status) {
+                    $status = $order_status->get_cos_key();
+                    $color = $order_status->get_cos_color();
+
+                    $css_rule = <<<CSS
+                        mark.order-status.status-$status {
+                            background: $color;
+                            color: #fff;
+                            font-weight: 500;
+                            text-shadow: 1px 1px rgba(0,0,0,0.5);
+                        }
+                    CSS;
+
+                    echo $css_rule;
+                }?>
+            </style>
+            <?php
+        }
+    }
+
+    /**
      * Adds "Pending Orders" view
      * @param array $views
      * @return array
@@ -172,6 +174,41 @@ class VTAWooCommerce {
 
         // remove all empty values
         return array_filter($views, fn ( $link ) => is_string($link));
+    }
+
+    /**
+     * Adds custom order statuses to bulk actions and sorts them accordingly
+     * @param array $bulk_actions
+     * @return array
+     */
+    public function update_custom_bulk_actions( array $bulk_actions ): array {
+        [ 'query_params' => $query_params, 'path' => $path ] = get_query_params();
+
+        if (
+            is_admin() &&
+            in_array($this->shop_post_type, $query_params) &&
+            preg_match('/edit\.php/', $path)
+        ) {
+            // add to beginning of sorted menu
+            $bulk_action_trash = [ 'trash' => $bulk_actions['trash'] ];
+            $new_bulk_actions  = [];
+
+            // custom sorting...
+            $keyed_cos = [];
+            array_walk($this->vta_cos, function ( VTACustomOrderStatus $order_status ) use ( &$keyed_cos ) {
+                $keyed_cos[$order_status->get_cos_key(true)] = $order_status;
+            });
+            $sorted_keyed_cos   = $this->sort_order_statuses($keyed_cos);
+            $filtered_keyed_cos = array_filter($sorted_keyed_cos, fn ( $val ) => !is_int($val));
+
+            foreach ( $filtered_keyed_cos as $order_status ) {
+                $new_bulk_actions["mark_{$order_status->get_cos_key()}"] = "Change status to {$order_status->get_cos_name()}";
+            }
+
+            return $bulk_action_trash + $new_bulk_actions;
+        }
+        // else...
+        return $bulk_actions;
     }
 
     // QUERY MODIFICATIONS //
@@ -246,6 +283,7 @@ class VTAWooCommerce {
 
     /**
      * Sorts order statuses based on plugin settings arrangement field.
+     * NOTE: Only sorts arrays with keys => values i.e. [ 'wc-processing' => any value ...]
      * @param array $order_statuses
      * @return array
      */

@@ -60,6 +60,9 @@ class VTAWooCommerce {
         add_filter("views_edit-{$this->shop_post_type}", [ $this, 'update_quicklinks' ], 10, 1);
         add_action('admin_head', [ $this, 'add_status_col_styles' ]);
         add_filter("bulk_actions-edit-{$this->shop_post_type}", [ $this, 'update_custom_bulk_actions' ], 11, 1);
+
+        // Order Status for new order statuses
+        add_action('woocommerce_checkout_order_processed', [ $this, 'use_default_order_status' ], 10, 3);
     }
 
     // POST STATUS / ORDER STATUS REGISTRATION CALLBACKS //
@@ -173,7 +176,7 @@ class VTAWooCommerce {
         $views = [ 'all' => $all_html ] + $views;
 
         // remove all empty values
-        return array_filter($views, fn ( $link ) => is_string($link));
+        return array_filter($views, fn( $link ) => is_string($link));
     }
 
     /**
@@ -199,7 +202,7 @@ class VTAWooCommerce {
                 $keyed_cos[$order_status->get_cos_key(true)] = $order_status;
             });
             $sorted_keyed_cos   = $this->sort_order_statuses($keyed_cos);
-            $filtered_keyed_cos = array_filter($sorted_keyed_cos, fn ( $val ) => !is_int($val));
+            $filtered_keyed_cos = array_filter($sorted_keyed_cos, fn( $val ) => !is_int($val));
 
             foreach ( $filtered_keyed_cos as $order_status ) {
                 $new_bulk_actions["mark_{$order_status->get_cos_key()}"] = "Change status to {$order_status->get_cos_name()}";
@@ -222,7 +225,7 @@ class VTAWooCommerce {
         [ 'path' => $path, 'query_params' => $query_params ] = get_query_params();
 
         // Orders page for all account
-        $is_my_account = (bool) preg_match('/my-account\/orders/', $path);
+        $is_my_account = (bool)preg_match('/my-account\/orders/', $path);
 
         // list table page for all WC orders
         $is_all_orders  = count($query_params) === 1;
@@ -259,6 +262,30 @@ class VTAWooCommerce {
         }
     }
 
+    // WC AUTOMATIONS //
+
+    /**
+     * Assigns the default order status for newly created orders
+     * @param int $order_id
+     * @param array $posted_data
+     * @param WC_Order $order
+     * @return void
+     */
+    public function use_default_order_status( int $order_id, array $posted_data, WC_Order $order ): void {
+        $default_status_key = $this->get_default_status_key();
+        $order->update_status($default_status_key);
+
+        // need to trigger customer "Processing" email here because we do not go through "Processing" status initially
+        if ( preg_match('/processing/', $order->get_status()) ) {
+            WC_Emails::instance();
+            $processing_email = new WC_Email_Customer_Processing_Order();
+            $processing_email->trigger($order_id);
+            // need to send admin "New Order" email as well
+            $new_order_email = new WC_Email_New_Order();
+            $new_order_email->trigger($order_id);
+        }
+    }
+
     // PRIVATE METHODS //
 
     /**
@@ -273,7 +300,7 @@ class VTAWooCommerce {
                 'posts_per_page' => -1
             ]);
             $order_statuses = $wp_query->posts;
-            return array_map(fn ( $post ) => new VTACustomOrderStatus($post), $order_statuses);
+            return array_map(fn( $post ) => new VTACustomOrderStatus($post), $order_statuses);
 
         } catch ( Exception $e ) {
             error_log("VTAWooCommerce::get_cos() error. Could not convert post status VTA Custom Order Statuses. - $e");
@@ -291,7 +318,7 @@ class VTAWooCommerce {
         $arrangement_ids = $this->settings->get_arrangement();
 
         try {
-            $arrangement_cos_keys = array_map(fn ( int $post_id ) => (new VTACustomOrderStatus($post_id))->get_cos_key(true), $arrangement_ids);
+            $arrangement_cos_keys = array_map(fn( int $post_id ) => (new VTACustomOrderStatus($post_id))->get_cos_key(true), $arrangement_ids);
             return array_replace(array_flip($arrangement_cos_keys), $order_statuses);
         } catch ( Exception $e ) {
             error_log("VTAWooCommerce::sort_order_status error. Could not sort custom order statuses - $e");
@@ -310,7 +337,7 @@ class VTAWooCommerce {
         // manually filter orders since pre_get_posts interferes with count
         $filtered_orders = array_filter(
             $orders,
-            fn ( WC_Order $wc_order ) => in_array($wc_order->get_status(), $non_reorderable_cos)
+            fn( WC_Order $wc_order ) => in_array($wc_order->get_status(), $non_reorderable_cos)
         );
 
         return count($filtered_orders);
@@ -333,10 +360,26 @@ class VTAWooCommerce {
         $vta_cos      = $this->vta_cos;
         $filtered_cos = array_filter(
             $vta_cos,
-            fn ( VTACustomOrderStatus $order_status ) => !$order_status->get_cos_reorderable() && !in_array($order_status->get_cos_key(), $other_non_pending_statuses)
+            fn( VTACustomOrderStatus $order_status ) => !$order_status->get_cos_reorderable() && !in_array($order_status->get_cos_key(), $other_non_pending_statuses)
         );
 
-        return array_values(array_map(fn ( VTACustomOrderStatus $order_status ) => $order_status->get_cos_key($with_prefix), $filtered_cos));
+        return array_values(array_map(fn( VTACustomOrderStatus $order_status ) => $order_status->get_cos_key($with_prefix), $filtered_cos));
+    }
+
+    /**
+     * Returns the current default order status key defined by plugin settings.
+     * @return string i.e. "wc-received"
+     */
+    private function get_default_status_key(): ?string {
+        $default_order_status_id = $this->settings->get_default();
+
+        try {
+            $order_status = new VTACustomOrderStatus($default_order_status_id);
+            return $order_status->get_cos_key(true);
+        } catch ( Exception $e ) {
+            error_log("VTAWooCommerce::get_default_status() error - $e");
+            return null;
+        }
     }
 
 }

@@ -9,39 +9,45 @@ if ( !defined('ABSPATH') ) {
  */
 class VTACosEmailManager {
 
-    /** @var string[] */
-    private array          $wc_list_items_id = [];
     private WC_Emails      $wc_emails;
     private VTACosSettings $settings;
+
+    /** @var string[] */
+    private array $wc_list_items_id = [];
+
+    /** @var VTACustomOrderStatus[] */
+    private array $no_email_statuses = [];
 
     public function __construct( VTACosSettings $settings ) {
         $this->settings = $settings;
 
         // access WC core classes after plugins are loaded
         add_action('plugins_loaded', [ $this, 'get_existing_emails' ]);
-        add_action('plugins_loaded', [ $this, 'register_email_triggers' ]);
-//        $this->get_existing_emails();
-//        $this->register_email_triggers();
-        // include the email class files
+        add_action('plugins_loaded', [ $this, 'filter_no_email_status' ]);
+//        add_action('plugins_loaded', [ $this, 'register_email_triggers' ]);
+
+        // add custom email classes
         add_filter('woocommerce_email_classes', [ $this, 'add_custom_emails' ], 10, 1);
     }
 
     /**
-     * Associates custom order status to VTACustomEmail and creates email triggers
+     * Returns list of order statuses that do not have corresponding core WC email.
      * @return void
      */
-    public function register_email_triggers(): void {
+    public function filter_no_email_status(): void {
         try {
             $order_statuses = array_map(fn( int $post_id ) => new VTACustomOrderStatus($post_id), $this->settings->get_arrangement());
 
             foreach ( $order_statuses as $order_status ) {
-//                $has_template = current(array_filter($this->wc_list_items_id, function ( string $id /** i.e. "customer_completed_order" */ ) use ( $order_status ) {
-//                    return preg_match("/{$order_status->get_cos_key(false)}/", $id);
-//                }));
+                $has_template = current(array_filter($this->wc_list_items_id, function ( string $id /** i.e. "customer_completed_order" */ ) use ( $order_status ) {
+                    return preg_match("/{$order_status->get_cos_key(false)}/", $id);
+                }));
 
-                // only assign custom emails to Order Statuses without core WC Email class
-//                if ( $has_template )
-//                    add_action("woocommerce_order_status_{$order_status->get_cos_key(false)}");
+                // add order status without email template
+                if ( !$has_template ) {
+                    $this->no_email_statuses[] = $order_status;
+                    // add_action("woocommerce_order_status_{$order_status->get_cos_key(false)}");
+                }
             }
 
         } catch ( Exception $e ) {
@@ -55,9 +61,18 @@ class VTACosEmailManager {
      * @return array
      */
     public function add_custom_emails( array $emails ): array {
-        if ( !isset($emails['VTACustomEmail']) ) {
-            $emails['VTACustomEmail'] = include_once 'VTACustomEmail.php';
+        // need to instantiate as object...
+//        $custom_email_class = include_once 'VTACustomEmail.php';
+        // add custom emails if not defined yet...
+        foreach ( $this->no_email_statuses as $order_status ) {
+            $order_status_key = $order_status->get_cos_key();
+            $formatted_key    = str_replace('-', '_', ucwords($order_status_key, '-'));
+
+            $custom_email = new VTACustomEmail();
+
+            $emails["VTACustomEmail_$formatted_key"] = $custom_email;
         }
+
         return $emails;
     }
 

@@ -9,7 +9,7 @@ class VTACustomEmail extends WC_Email {
         $this->title          = 'Custom Email';
         $this->description    = 'This email is received when an order status is changed to Pending.';
 
-        $this->heading = 'Custom Item Email';
+        $this->heading = 'Custom Email';
         $this->subject = '[{blogname}] Order for {product_title} (Order {order_number}) - {order_date}';
 
         // email template path

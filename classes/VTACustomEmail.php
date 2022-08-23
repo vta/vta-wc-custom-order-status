@@ -2,14 +2,17 @@
 
 class VTACustomEmail extends WC_Email {
 
-    function __construct() {
+    /**
+     * @param VTACustomOrderStatus $order_status custom order status attributes
+     */
+    function __construct( VTACustomOrderStatus $order_status ) {
         // Add email ID, title, description, heading, subject
-        $this->id             = 'custom_email';
+        $this->id             = "custom_email_{$order_status->get_cos_key()}";
         $this->customer_email = true;
-        $this->title          = 'Custom Email';
-        $this->description    = 'This email is received when an order status is changed to Pending.';
+        $this->title          = "{$order_status->get_cos_name()} Email";
+        $this->description    = "This email is received when an order status is changed to Pending.";
 
-        $this->heading = 'Custom Email';
+        $this->heading = "{$order_status->get_cos_name()}";
         $this->subject = '[{blogname}] Order for {product_title} (Order {order_number}) - {order_date}';
 
         // email template path
@@ -183,44 +186,43 @@ class VTACustomEmail extends WC_Email {
         $placeholder_text  = sprintf(__('Available placeholders: %s', 'woocommerce'), '<code>' . esc_html(implode('</code>, <code>', array_keys($this->placeholders))) . '</code>');
         $this->form_fields = [
             'enabled'            => [
-                'title'   => __('Enable/Disable', 'custom-email'),
+                'title'   => 'Enable/Disable',
                 'type'    => 'checkbox',
-                'label'   => __('Enable this email notification', 'custom-email'),
+                'label'   => 'Enable this email notification',
                 'default' => 'yes'
             ],
             'subject'            => [
-                'title'       => __('Subject', 'custom-email'),
+                'title'       => 'Subject',
                 'type'        => 'text',
                 'description' => sprintf(__('This controls the email subject line. Leave blank to use the default subject: <code>%s</code>.', 'custom-email'), $this->subject),
                 'placeholder' => '',
                 'default'     => ''
             ],
             'heading'            => [
-                'title'       => __('Email Heading', 'custom-email'),
+                'title'       => 'Email Heading',
                 'type'        => 'text',
                 'description' => sprintf(__('This controls the main heading contained within the email notification. Leave blank to use the default heading: <code>%s</code>.', 'custom-email'), $this->heading),
                 'placeholder' => '',
                 'default'     => ''
             ],
             'additional_content' => [
-                'title'       => __('Additional content', 'custom-email'),
-                'description' => __('Text to appear below the main email content.', 'custom-email') . ' ' . $placeholder_text,
+                'title'       => 'Additional content',
+                'description' => 'Text to appear below the main email content.' . ' ' . $placeholder_text,
                 'css'         => 'width:400px; height: 75px;',
-                'placeholder' => __('N/A', 'custom-email'),
+                'placeholder' => 'N/A', 'custom-email',
                 'type'        => 'textarea',
                 'default'     => $this->get_default_additional_content(),
                 'desc_tip'    => true,
             ],
             'email_type'         => [
-                'title'       => __('Email type', 'custom-email'),
+                'title'       => 'Email type', 'custom-email',
                 'type'        => 'select',
-                'description' => __('Choose which format of email to send.', 'custom-email'),
+                'description' => 'Choose which format of email to send.', 'custom-email',
                 'default'     => 'html',
                 'class'       => 'email_type',
                 'options'     => [
-                    'plain'     => __('Plain text', 'custom-email'),
-                    'html'      => __('HTML', 'custom-email'),
-                    'multipart' => __('Multipart', 'custom-email'),
+                    'plain' => 'Plain text',
+                    'html'  => 'HTML', 'custom-email'
                 ]
             ]
         ];

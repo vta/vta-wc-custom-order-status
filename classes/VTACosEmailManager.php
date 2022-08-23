@@ -57,22 +57,17 @@ class VTACosEmailManager {
 
     /**
      * Registers our custom email classes
-     * @param array $emails
+     * @param array $emails existing email objects from WC core plugin.
      * @return array
      */
     public function add_custom_emails( array $emails ): array {
-        // need to instantiate as object...
-//        $custom_email_class = include_once 'VTACustomEmail.php';
-        // add custom emails if not defined yet...
         foreach ( $this->no_email_statuses as $order_status ) {
             $order_status_key = $order_status->get_cos_key();
             $formatted_key    = str_replace('-', '_', ucwords($order_status_key, '-'));
-
-            $custom_email = new VTACustomEmail();
+            $custom_email     = new VTACustomEmail($order_status);
 
             $emails["VTACustomEmail_$formatted_key"] = $custom_email;
         }
-
         return $emails;
     }
 

@@ -28,8 +28,6 @@ class Vta_Wc_Custom_Order_Status_Public {
     /** @var  string $version The current version of this plugin. */
     private string $version;
 
-    private VTAWooCommerce $vta_woocommerce;
-
     /**
      * Initialize the class and set its properties.
      * @param string $plugin_name The name of the plugin.
@@ -38,8 +36,6 @@ class Vta_Wc_Custom_Order_Status_Public {
     public function __construct( string $plugin_name, string $version ) {
         $this->plugin_name = $plugin_name;
         $this->version     = $version;
-
-        $this->vta_woocommerce = new VTAWooCommerce($plugin_name, $version);
     }
 
     /**

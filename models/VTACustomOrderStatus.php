@@ -61,6 +61,15 @@ class VTACustomOrderStatus {
     }
 
     /**
+     * Returns the order status key
+     * @param bool $with_prefix prepend "wc_" if true
+     * @return string i.e. "wc-processing"
+     */
+    public function get_cos_key( bool $with_prefix = false ): string {
+        return $with_prefix ? "wc-{$this->post->post_name}" : $this->post->post_name;
+    }
+
+    /**
      * Returns Post ID of the custom order status
      * @return int
      */

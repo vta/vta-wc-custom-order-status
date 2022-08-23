@@ -50,6 +50,7 @@ require_once 'models/VTACosSettings.php';
 require_once 'classes/VTACustomOrderStatuses.php';
 require_once 'classes/VTACosSettingsManager.php';
 require_once 'classes/VTAWooCommerce.php';
+require_once 'classes/VTACustomEmail.php';
 require_once 'classes/VTACosEmailManager.php';
 
 // If this file is called directly, abort.

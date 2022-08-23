@@ -39,7 +39,10 @@ class Vta_Wc_Custom_Order_Status_Public {
         $this->plugin_name = $plugin_name;
         $this->version     = $version;
 
-        $this->vta_cos_emails = new VTACosEmailManager();
+        // Init Email Manager
+        $plugin_settings      = get_option(VTA_COS_SETTINGS_NAME);
+        $settings             = new VTACosSettings($plugin_settings);
+        $this->vta_cos_emails = new VTACosEmailManager($settings);
     }
 
     /**
@@ -47,7 +50,7 @@ class Vta_Wc_Custom_Order_Status_Public {
      * @returns void
      */
     public function enqueue_styles(): void {
-        wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/vta-wc-custom-order-status-public.css', array(), $this->version, 'all');
+        wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/vta-wc-custom-order-status-public.css', [], $this->version, 'all');
     }
 
     /**
@@ -55,7 +58,7 @@ class Vta_Wc_Custom_Order_Status_Public {
      * @returns void
      */
     public function enqueue_scripts(): void {
-        wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/vta-wc-custom-order-status-public.js', array( 'jquery' ), $this->version, false);
+        wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/vta-wc-custom-order-status-public.js', [ 'jquery' ], $this->version, false);
     }
 
 }

@@ -28,6 +28,7 @@ class Vta_Wc_Custom_Order_Status_Public {
     /** @var  string $version The current version of this plugin. */
     private string $version;
 
+    /** @var VTACosEmailManager integrates our custom order statuses with emails */
     private VTACosEmailManager $vta_cos_emails;
 
     /**
@@ -39,10 +40,10 @@ class Vta_Wc_Custom_Order_Status_Public {
         $this->plugin_name = $plugin_name;
         $this->version     = $version;
 
-        // Init Email Manager
         $plugin_settings      = get_option(VTA_COS_SETTINGS_NAME);
         $settings             = new VTACosSettings($plugin_settings);
         $this->vta_cos_emails = new VTACosEmailManager($settings);
+//        add_action('plugins_loaded', [ $this, 'load_email_manager' ]);
     }
 
     /**
@@ -59,6 +60,17 @@ class Vta_Wc_Custom_Order_Status_Public {
      */
     public function enqueue_scripts(): void {
         wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/vta-wc-custom-order-status-public.js', [ 'jquery' ], $this->version, false);
+    }
+
+    /**
+     * Load email manager only after plugins have been loaded
+     * @return void
+     */
+    public function load_email_manager(): void {
+        // Init Email Manager
+        $plugin_settings      = get_option(VTA_COS_SETTINGS_NAME);
+        $settings             = new VTACosSettings($plugin_settings);
+        $this->vta_cos_emails = new VTACosEmailManager($settings);
     }
 
 }

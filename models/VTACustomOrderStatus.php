@@ -84,4 +84,12 @@ class VTACustomOrderStatus {
     public function get_post(): WP_Post {
         return $this->post;
     }
+
+    /**
+     * Returns the hook name of for triggering its custom email
+     * @return string
+     */
+    public function get_email_action(): string {
+        return "custom_email_{$this->get_cos_key()}";
+    }
 }

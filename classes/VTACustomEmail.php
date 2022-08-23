@@ -10,10 +10,10 @@ class VTACustomEmail extends WC_Email {
         $this->id             = "custom_email_{$order_status->get_cos_key()}";
         $this->customer_email = true;
         $this->title          = "{$order_status->get_cos_name()} Email";
-        $this->description    = "This email is received when an order status is changed to Pending.";
+        $this->description    = "This email is received when an order status is changed to \"{$order_status->get_cos_name()}\".";
 
         $this->heading = "{$order_status->get_cos_name()}";
-        $this->subject = '[{blogname}] Order for {product_title} (Order {order_number}) - {order_date}';
+        $this->subject = "{$order_status->get_cos_name()} (Order #{order_number}) - {order_date}";
 
         // email template path
         $this->template_html  = 'templates/custom-email-html.php';
@@ -21,7 +21,7 @@ class VTACustomEmail extends WC_Email {
 
         // Triggers for this email
 //        add_action('custom_example_email_notification', [ $this, 'queue_notification' ]);
-//        add_action('custom_example_email_trigger_notification', [ $this, 'trigger' ]);
+        add_action($order_status->get_email_action(), [ $this, 'trigger' ]);
 
         // Call parent constructor
         parent::__construct();

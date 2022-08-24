@@ -20,7 +20,7 @@ class VTACustomEmail extends WC_Email {
         $this->template_plain = 'templates/custom-email-plain.php';
 
         // Triggers for this email
-        add_action($order_status->get_email_action(), [ $this, 'trigger' ]);
+        add_action($order_status->get_email_action(), [ $this, 'trigger' ], 11, 1);
 
         // Call parent constructor
         parent::__construct();
@@ -55,13 +55,15 @@ class VTACustomEmail extends WC_Email {
      * @param WC_Order | int $order
      * @return void
      */
-    function trigger( $order ) {
+    function trigger( $order ): void {
+        error_log('sending...');
 
+        // convert to WC_Order if id is given
         if ( is_int($order) ) {
             $order = wc_get_order($order);
         }
 
-        // validations
+        // validation
         if ( $order instanceof WC_Order ) {
 
             // if no recipient is set, do not send the email

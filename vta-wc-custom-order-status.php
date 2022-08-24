@@ -43,8 +43,11 @@ const ORDER_STATUS_ARRANGEMENT_KEY = 'order_status_arrangement';
 /** Global files for plugin and/or theme usage **/
 require_once 'admin/class-vta-wc-custom-order-status-admin.php';
 require_once 'utils/common.php';
+// WC Dependencies (before plugins are loaded)
 include_once ABSPATH . '/wp-content/plugins/woocommerce/includes/abstracts/abstract-wc-settings-api.php';
 include_once ABSPATH . '/wp-content/plugins/woocommerce/includes/emails/class-wc-email.php';
+include_once ABSPATH . '/wp-content/plugins/woocommerce/includes/class-wc-emails.php';
+include_once ABSPATH . '/wp-content/plugins/woocommerce/woocommerce.php';
 // Models
 require_once 'models/VTACustomOrderStatus.php';
 require_once 'models/VTACosSettings.php';

@@ -69,6 +69,10 @@ class VTACustomEmail extends WC_Email {
             $this->order = $order;
             $recipient   = $order->get_billing_email();
 
+            $this->placeholders['{order_date}']              = wc_format_datetime( $order->get_date_created() );
+            $this->placeholders['{order_number}']            = $order->get_order_number();
+            $this->placeholders['{order_billing_full_name}'] = $order->get_formatted_billing_full_name();
+
             // send the email
             $this->send($recipient, $this->get_subject(), $this->get_content(), $this->get_headers(), []);
         }

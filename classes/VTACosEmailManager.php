@@ -31,6 +31,22 @@ class VTACosEmailManager {
     }
 
     /**
+     * Retrieves existing emails from WC core email class.
+     * @return void
+     */
+    public function get_existing_emails(): void {
+        if ( class_exists('WC_Emails') ) {
+            $this->wc_emails = new WC_Emails();
+            $wc_email_list   = $this->wc_emails->get_emails();
+
+            foreach ( $wc_email_list as $wc_email ) {
+                if ( $wc_email->id ?? null )
+                    $this->wc_list_items_id[] = $wc_email->id;
+            }
+        }
+    }
+
+    /**
      * Returns list of order statuses that do not have corresponding core WC email.
      * @return void
      */
@@ -69,22 +85,5 @@ class VTACosEmailManager {
             $emails["VTACustomEmail_$formatted_key"] = $custom_email;
         }
         return $emails;
-    }
-
-
-    /**
-     * Retrieves existing emails from WC core email class.
-     * @return void
-     */
-    public function get_existing_emails(): void {
-        if ( class_exists('WC_Emails') ) {
-            $this->wc_emails = new WC_Emails();
-            $wc_email_list   = $this->wc_emails->get_emails();
-
-            foreach ( $wc_email_list as $wc_email ) {
-                if ( $wc_email->id ?? null )
-                    $this->wc_list_items_id[] = $wc_email->id;
-            }
-        }
     }
 }

@@ -7,7 +7,7 @@ class VTACustomEmail extends WC_Email {
     /**
      * @param VTACustomOrderStatus $order_status custom order status attributes
      */
-    function __construct( VTACustomOrderStatus $order_status ) {
+    public function __construct( VTACustomOrderStatus $order_status ) {
         // Add email ID, title, description, heading, subject
         $this->id             = "custom_email_{$order_status->get_cos_key()}";
         $this->customer_email = true;
@@ -41,23 +41,13 @@ class VTACustomEmail extends WC_Email {
 
     }
 
-//    public function queue_notification( $order_id ) {
-//
-//        $order = new WC_order($order_id);
-//        $items = $order->get_items();
-//        // foreach item in the order
-//        foreach ( $items as $item_key => $item_value ) {
-//            // add an event for the item email, pass the item ID so other details can be collected as needed
-//            wp_schedule_single_event(time(), 'custom_example_email_trigger', [ 'item_id' => $item_key ]);
-//        }
-//    }
-
     /**
      * Sends email for order status...
      * @param WC_Order | int $order
      * @return void
      */
-    function trigger( $order ): void {
+    public function trigger( $order ): void {
+        error_log("sending...");
 
         // convert to WC_Order if id is given
         if ( is_int($order) ) {
@@ -82,7 +72,7 @@ class VTACustomEmail extends WC_Email {
      * Returns HTML Email content
      * @return false|string
      */
-    function get_content_html() {
+    public function get_content_html() {
         ob_start();
         wc_get_template($this->template_html, [
             'email_heading'      => $this->get_heading(),
@@ -96,7 +86,7 @@ class VTACustomEmail extends WC_Email {
      * Returns plain HTML content
      * @return false|string
      */
-    function get_content_plain() {
+    public function get_content_plain() {
         ob_start();
         wc_get_template($this->template_plain, [
             'email_heading'      => $this->get_heading(),
@@ -106,18 +96,8 @@ class VTACustomEmail extends WC_Email {
         return ob_get_clean();
     }
 
-    // return the subject
-//    function get_subject() {
-//        return apply_filters('woocommerce_email_subject_' . $this->id, $this->format_string($this->subject), $this->object);
-//    }
-//
-//    // return the email heading
-//    public function get_heading() {
-//        return apply_filters('woocommerce_email_heading_' . $this->id, $this->format_string($this->heading), $this->object);
-//    }
-
     // form fields that are displayed in WooCommerce->Settings->Emails
-    function init_form_fields() {
+    public function init_form_fields() {
         $placeholder_text  = sprintf(__('Available placeholders: %s', 'woocommerce'), '<code>' . esc_html(implode('</code>, <code>', array_keys($this->placeholders))) . '</code>');
         $this->form_fields = [
             'enabled'            => [

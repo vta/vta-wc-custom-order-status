@@ -270,6 +270,7 @@ class VTAWooCommerce {
      * @param array $posted_data
      * @param WC_Order $order
      * @return void
+     * TODO - move to email manager...
      */
     public function use_default_order_status( int $order_id, array $posted_data, WC_Order $order ): void {
         $default_status_key = $this->get_default_status_key();

@@ -16,7 +16,7 @@ class VTACosEmailManager {
     private array $no_email_statuses;
 
     public function __construct( VTACosSettings $settings ) {
-        $this->wc_emails = new WC_Emails();
+        $this->wc_emails = WC_Emails::instance();
         $this->settings  = $settings;
 
         $existing_email_ids      = $this->get_existing_emails();
@@ -37,7 +37,10 @@ class VTACosEmailManager {
             $formatted_key    = str_replace('-', '_', ucwords($order_status_key, '-'));
             $custom_email     = new VTACustomEmail($order_status);
 
-            $emails["VTACustomEmail_$formatted_key"] = $custom_email;
+            $custom_email_key = "VTACustomEmail_$formatted_key";
+            if ( !isset($emails[$custom_email_key]) ) {
+                $emails["VTACustomEmail_$formatted_key"] = $custom_email;
+            }
         }
         return $emails;
     }

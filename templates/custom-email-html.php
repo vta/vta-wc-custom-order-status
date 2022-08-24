@@ -5,17 +5,8 @@
  */
 
 // GLOBALS
-
-/** @var WC_Order $order */
-global $order;
 $order_statuses = wc_get_order_statuses();
 $order_status   = $order_statuses[$order->get_status()] ?? null;
-
-/** @var string|null $email_heading */
-global $email_heading;
-
-/** @var string|null $additional_content */
-global $additional_content;
 
 $opening_paragraph = "An order, made by %s, has now been marked %s. The details of the item are as follows:";
 

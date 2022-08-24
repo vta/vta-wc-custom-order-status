@@ -4,10 +4,6 @@
  * @description plain text email for custom order statuses...
  */
 
-// GLOBALS //
-
-/** @var WC_Order $order */
-global $order;
 $order_statuses = wc_get_order_statuses();
 $order_status   = $order_statuses[$order->get_status()] ?? null;
 

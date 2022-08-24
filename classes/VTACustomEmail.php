@@ -2,6 +2,8 @@
 
 class VTACustomEmail extends WC_Email {
 
+    private WC_Order $order;
+
     /**
      * @param VTACustomOrderStatus $order_status custom order status attributes
      */
@@ -56,7 +58,6 @@ class VTACustomEmail extends WC_Email {
      * @return void
      */
     function trigger( $order ): void {
-        error_log('sending...');
 
         // convert to WC_Order if id is given
         if ( is_int($order) ) {
@@ -65,14 +66,11 @@ class VTACustomEmail extends WC_Email {
 
         // validation
         if ( $order instanceof WC_Order ) {
-
-            // if no recipient is set, do not send the email
-            if ( !$this->get_recipient() ) {
-                return;
-            }
+            $this->order = $order;
+            $recipient   = $order->get_billing_email();
 
             // send the email
-            $this->send($this->get_recipient(), $this->get_subject(), $this->get_content(), $this->get_headers(), []);
+            $this->send($recipient, $this->get_subject(), $this->get_content(), $this->get_headers(), []);
         }
     }
 
@@ -84,7 +82,8 @@ class VTACustomEmail extends WC_Email {
         ob_start();
         wc_get_template($this->template_html, [
             'email_heading'      => $this->get_heading(),
-            'additional_content' => $this->get_additional_content()
+            'additional_content' => $this->get_additional_content(),
+            'order'              => $this->order
         ], 'custom-templates', $this->template_base);
         return ob_get_clean();
     }
@@ -97,7 +96,8 @@ class VTACustomEmail extends WC_Email {
         ob_start();
         wc_get_template($this->template_plain, [
             'email_heading'      => $this->get_heading(),
-            'additional_content' => $this->get_additional_content()
+            'additional_content' => $this->get_additional_content(),
+            'order'              => $this->order
         ], 'custom-templates', $this->template_base);
         return ob_get_clean();
     }

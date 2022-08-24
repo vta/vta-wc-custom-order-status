@@ -24,9 +24,6 @@ class VTACosEmailManager {
 
         // add custom email classes
         add_filter('woocommerce_email_classes', [ $this, 'add_custom_emails' ], 11, 1);
-
-        // remove email configuration (address, info, etc.)
-        remove_action('woocommerce_email_customer_details', [ WC_Emails::class, 'customer_details' ]);
     }
 
     /**

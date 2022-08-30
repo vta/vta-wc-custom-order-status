@@ -26,7 +26,6 @@ class VTACosEmailManager {
         add_filter('woocommerce_email_classes', [ $this, 'add_custom_emails' ], 10, 1);
 
         // Default Order Status for new orders
-//        add_action('woocommerce_checkout_order_processed', [ $this, 'use_default_order_status' ], 10, 3);
         add_action('woocommerce_checkout_order_created', [ $this, 'use_default_order_status' ], 10, 1);
 
         $this->wc_emails->init(); // ensures we hook into "woocommerce_email_classes" if WC_Emails already instantiated
@@ -70,15 +69,14 @@ class VTACosEmailManager {
 
     /**
      * Assigns the default order status for newly created orders
-     * @param int $order_id
-     * @param array $posted_data
      * @param WC_Order $order
      * @return void
      */
-//    public function use_default_order_status( int $order_id, array $posted_data, WC_Order $order ): void {
     public function use_default_order_status( WC_Order $order ): void {
         $default_status_key = $this->get_default_status_key();
         $order->update_status($default_status_key);
+
+        
     }
 
     // PRIVATE METHODS //
@@ -133,14 +131,15 @@ class VTACosEmailManager {
 
     /**
      * Returns the current default order status key defined by plugin settings.
+     * @param bool $has_prefix
      * @return string i.e. "wc-received"
      */
-    private function get_default_status_key(): ?string {
+    private function get_default_status_key( bool $has_prefix = false ): ?string {
         $default_order_status_id = $this->settings->get_default();
 
         try {
             $order_status = new VTACustomOrderStatus($default_order_status_id);
-            return $order_status->get_cos_key(true);
+            return $order_status->get_cos_key($has_prefix);
         } catch ( Exception $e ) {
             error_log("VTAWooCommerce::get_default_status() error - $e");
             return null;

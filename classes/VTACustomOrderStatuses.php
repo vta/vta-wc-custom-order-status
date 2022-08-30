@@ -117,7 +117,7 @@ class VTACustomOrderStatuses {
                 'show_in_menu' => true,
                 'description'  => 'Customizable WooCommerce custom order statuses that re-purposed for VTA Document Services workflow.',
                 'hierarchical' => false,
-                'menu_icon'    => 'dashicons-block-default'
+                'menu_icon'    => 'dashicons-clipboard'
             ]
         );
     }

@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @title VTACustomEmail
+ * Extends the core WC_Email class. This email is meant to compliment VTA's Custom Order Status.
+ * Reminder Emails are also configured here to allow order status to have 2 emails per order status.
+ */
 class VTACustomEmail extends WC_Email {
 
     private WC_Order $order;

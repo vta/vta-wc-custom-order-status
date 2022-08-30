@@ -30,9 +30,10 @@
 const VTA_WC_CUSTOM_ORDER_STATUS_VERSION = '0.6';
 const VTA_WC_COS_PLUGIN_NAME             = 'vta-wc-custom-order-status';
 // Post
-const VTA_COS_CPT          = 'vta_order_status';
-const META_COLOR_KEY       = 'vta_cos_color';
-const META_REORDERABLE_KEY = 'vta_cos_is_reorderable';
+const VTA_COS_CPT           = 'vta_order_status';
+const META_COLOR_KEY        = 'vta_cos_color';
+const META_REORDERABLE_KEY  = 'vta_cos_is_reorderable';
+const META_HAS_REMINDER_KEY = 'vta_cos_has_reminder';
 // Settings/Options
 const VTA_COS_SETTINGS_NAME        = 'vta_order_status_options';
 const VTA_COS_SETTINGS_PAGE        = 'vta_order_status_settings';

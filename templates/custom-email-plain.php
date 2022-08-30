@@ -41,8 +41,16 @@ if ( $order && $billing_first_name && $billing_last_name ) {
 
 echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n\n";
 
-foreach ( $order->get_items() as $order_item ) {
+if ( $main_content ?? null ) {
+    ?>
+    <p><?php echo $main_content; ?></p>
+    <?php
+}
 
+echo "\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n\n";
+
+foreach ( $order->get_items() as $order_item ) {
+    echo "{$order_item->get_name()} --- QTY: {$order_item->get_quantity()}\n";
 }
 
 echo "\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n\n";

@@ -74,6 +74,7 @@ class VTACustomEmail extends WC_Email {
         ob_start();
         wc_get_template($this->template_html, [
             'email_heading'      => $this->get_heading(),
+            'main_content'       => $this->get_main_content(),
             'additional_content' => $this->get_additional_content(),
             'order'              => $this->order
         ], 'custom-templates', $this->template_base);
@@ -88,6 +89,7 @@ class VTACustomEmail extends WC_Email {
         ob_start();
         wc_get_template($this->template_plain, [
             'email_heading'      => $this->get_heading(),
+            'main_content'       => $this->get_main_content(),
             'additional_content' => $this->get_additional_content(),
             'order'              => $this->order
         ], 'custom-templates', $this->template_base);
@@ -118,6 +120,15 @@ class VTACustomEmail extends WC_Email {
                 'placeholder' => '',
                 'default'     => ''
             ],
+            'main_content' => [
+                'title'       => 'Main content',
+                'description' => 'Text to appear above order details.' . ' ' . $placeholder_text,
+                'css'         => 'width:400px; height: 75px;',
+                'placeholder' => 'N/A', 'custom-email',
+                'type'        => 'textarea',
+                'default'     => $this->get_main_content(),
+                'desc_tip'    => true,
+            ],
             'additional_content' => [
                 'title'       => 'Additional content',
                 'description' => 'Text to appear below the main email content.' . ' ' . $placeholder_text,
@@ -139,5 +150,13 @@ class VTACustomEmail extends WC_Email {
                 ]
             ]
         ];
+    }
+
+    /**
+     * Custom Dynamic field for main content above the Order Detaisl
+     * @return string
+     */
+    public function get_main_content(): string {
+        return $this->get_option('main_content', '');
     }
 }

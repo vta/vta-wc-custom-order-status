@@ -31,6 +31,12 @@ if ( $order && $billing_first_name && $billing_last_name ) : ?>
     <p><?php printf($opening_paragraph, "$billing_first_name $billing_last_name", $order_status); ?></p>
 <?php endif;
 
+if ( $main_content ?? null ) {
+    ?>
+    <p><?php echo $main_content; ?></p>
+    <?php
+}
+
 /*
 * @hooked WC_Emails::order_details() Shows the order details table.
 * @hooked WC_Structured_Data::generate_order_data() Generates structured data.

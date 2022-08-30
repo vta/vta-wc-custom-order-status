@@ -17,7 +17,6 @@ class VTACosEmailManager {
 
     public function __construct( VTACosSettings $settings ) {
         $this->wc_emails = WC_Emails::instance() ?? new WC_Emails();
-        $this->wc_emails->init(); // ensures we hook into "woocommerce_email_classes" if WC_Emails already instantiated
         $this->settings  = $settings;
 
         $existing_email_ids      = $this->get_existing_emails();
@@ -25,6 +24,8 @@ class VTACosEmailManager {
 
         // add custom email classes
         add_filter('woocommerce_email_classes', [ $this, 'add_custom_emails' ], 10, 1);
+
+        $this->wc_emails->init(); // ensures we hook into "woocommerce_email_classes" if WC_Emails already instantiated
     }
 
     /**
@@ -54,9 +55,8 @@ class VTACosEmailManager {
      */
     public function send_email( int $order_id, WC_Order $order ): void {
         try {
-            $order_status = VTACustomOrderStatus::get_cos_by_key($order->get_status());
-            $this->wc_emails = WC_Emails::instance() ?? new WC_Emails(); // must re-initiate class to add custom email classes
-            $this->wc_emails->init(); // ensures we hook into "woocommerce_email_classes" if WC_Emails already instantiated
+            $order_status    = VTACustomOrderStatus::get_cos_by_key($order->get_status());
+            $this->wc_emails = WC_Emails::instance() ?? new WC_Emails(); // must re-initiate class to trigger custom email classes
             do_action($order_status->get_email_action(), $order);
 
         } catch ( Exception $e ) {

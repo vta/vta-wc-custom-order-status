@@ -167,6 +167,31 @@ class VTACustomEmail extends WC_Email {
                 ]
             ]
         ];
+
+        // Reminder Options
+        if ( $this->is_reminder ) {
+            $this->form_fields['reminder_time'] = [
+                'title'       => 'Scheduled Reminder Time',
+                'description' => 'Scheduled time to send reminder emails on weekdays.',
+                'type'        => 'time',
+                'default'     => '08:00',
+                'desc_tip'    => true,
+            ];
+            $this->form_fields['has_complete_action'] = [
+                'title'       => 'Has Complete Action',
+                'description' => 'Provides button for the user to complete their order.',
+                'type'        => 'checkbox',
+                'default'     => false,
+                'desc_tip'    => true,
+            ];
+            $this->form_fields['complete_action_text'] = [
+                'title'       => 'Complete Action Button Text',
+                'description' => 'Button Text for complete action (if applicable).',
+                'type'        => 'text',
+                'default'     => 'Complete',
+                'desc_tip'    => true,
+            ];
+        }
     }
 
     /**
@@ -175,5 +200,29 @@ class VTACustomEmail extends WC_Email {
      */
     public function get_main_content(): string {
         return $this->get_option('main_content', '');
+    }
+
+    /**
+     * Scheduled time for reminder emails to send out
+     * @return string
+     */
+    public function get_reminder_time(): string {
+        return $this->get_option('reminder_time', '08:00');
+    }
+
+    /**
+     * Action button condition for reminder emails
+     * @return bool
+     */
+    public function has_complete_action(): bool {
+        return $this->get_option('has_complete_action', false);
+    }
+
+    /**
+     * Text for action button (if applicable).
+     * @return string
+     */
+    public function has_complete_action_text(): string {
+        return $this->get_option('complete_action_text', 'Complete');
     }
 }

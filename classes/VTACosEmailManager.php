@@ -76,7 +76,8 @@ class VTACosEmailManager {
         $default_status_key = $this->get_default_status_key();
         $order->update_status($default_status_key);
 
-        
+        $new_order_email = new WC_Email_New_Order();
+        $new_order_email->trigger($order->get_id());
     }
 
     // PRIVATE METHODS //

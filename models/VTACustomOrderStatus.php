@@ -93,7 +93,11 @@ class VTACustomOrderStatus {
         return "custom_email_{$this->get_cos_key()}";
     }
 
-    public function get_has_reminder_email(): boolean {
+    /**
+     * Returns if order status has reminder email.
+     * @return bool
+     */
+    public function get_has_reminder_email(): bool {
         return (bool)get_post_meta($this->post->ID, $this->meta_reorderable_key, true);
     }
 

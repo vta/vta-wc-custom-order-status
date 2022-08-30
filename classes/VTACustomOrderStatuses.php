@@ -10,9 +10,10 @@ class VTACustomOrderStatuses {
     private string $plugin_name, $plugin_version;
 
     // POST vars
-    private string $post_type            = VTA_COS_CPT;
-    private string $meta_color_key       = META_COLOR_KEY;
-    private string $meta_reorderable_key = META_REORDERABLE_KEY;
+    private string $post_type             = VTA_COS_CPT;
+    private string $meta_color_key        = META_COLOR_KEY;
+    private string $meta_reorderable_key  = META_REORDERABLE_KEY;
+    private string $meta_has_reminder_key = META_HAS_REMINDER_KEY;
 
     // SETTINGS var
     private VTACosSettings $settings;
@@ -54,7 +55,7 @@ class VTACustomOrderStatuses {
      */
     public function enqueue_scripts(): void {
         global $post;
-        list('query_params' => $query_params, 'path' => $path) = get_query_params();
+        [ 'query_params' => $query_params, 'path' => $path ] = get_query_params();
 
         // New/Edit Post page
         $is_new_post_page  = preg_match('/post-new\.php/', $path) || in_array($this->post_type, $query_params);
@@ -169,7 +170,7 @@ class VTACustomOrderStatuses {
         /** @var WP_Post | null $post */
         global $post;
 
-        list('query_params' => $query_params) = get_query_params();
+        [ 'query_params' => $query_params ] = get_query_params();
 
         $is_edit = in_array('edit', $query_params);
 
@@ -177,6 +178,7 @@ class VTACustomOrderStatuses {
         $post_id          = $is_edit && $post instanceof WP_Post ? $post->ID : null;
         $color            = $is_edit ? get_post_meta($post_id, $this->meta_color_key, true) : '#000000';
         $reorderable      = $is_edit ? get_post_meta($post_id, $this->meta_reorderable_key, true) : false;
+        $has_reminder     = $is_edit ? get_post_meta($post_id, $this->meta_has_reminder_key, true) : false;
         ?>
 
         <table id="edit-custom-attr">
@@ -201,7 +203,7 @@ class VTACustomOrderStatuses {
                                id="color-picker"
                                title="Custom Order Status Color Picker"
                                value="<?php echo $color; ?>"
-                               name="vta_cos_color"
+                               name="<?php echo $this->meta_color_key; ?>"
                                required
                         >
                         <button id="color-reset" class="button-small button-link-delete">
@@ -222,10 +224,23 @@ class VTACustomOrderStatuses {
                 </td>
                 <td>
                     <input type="checkbox" id="reorderable-checkbox"
-                           name="vta_cos_is_reorderable" <?php echo $reorderable ? 'checked' : '' ?>>
+                           name="<?php echo $this->meta_reorderable_key; ?>" <?php echo $reorderable ? 'checked' : '' ?>>
                     <label for="reorderable-checkbox"> Yes</label>
                     <p class="description">
                         Allow customs to re-order at this order status.
+                    </p>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label for=reminder-checkbox">Has Reminder Email?</label>
+                </td>
+                <td>
+                    <input type="checkbox" id="reminder-checkbox"
+                           name="<?php echo $this->meta_has_reminder_key; ?>" <?php echo $has_reminder ? 'checked' : '' ?>>
+                    <label for="reorderable-checkbox"> Yes</label>
+                    <p class="description">
+                        Adds a reminder email for this order status.
                     </p>
                 </td>
             </tr>
@@ -251,6 +266,10 @@ class VTACustomOrderStatuses {
         // Order Status "Is Reorderable"
         $is_reorderable = $_POST[$this->meta_reorderable_key] ?? false;
         update_post_meta($post_ID, $this->meta_reorderable_key, (bool)$is_reorderable);
+
+        // Has Reminder Email
+        $has_reminder = $_POST[$this->meta_has_reminder_key] ?? false;
+        update_post_meta($post_ID, $this->meta_has_reminder_key, (bool)$has_reminder);
 
         // Update in settings where needed
         if ( $post instanceof WP_Post && $post->post_status === 'publish' )
@@ -387,7 +406,7 @@ class VTACustomOrderStatuses {
      */
     public function define_custom_col_sorting( WP_Query $wp_query ): void {
         $post_type = $wp_query->get('post_type');
-        list('path' => $path, 'query_params' => $query_params) = get_query_params();
+        [ 'path' => $path, 'query_params' => $query_params ] = get_query_params();
 
         // only run in admin Table List for VTA Holiday Posts
         if ( is_admin() && $post_type === $this->post_type && preg_match('/edit\.php/', $path) ) {
@@ -430,7 +449,7 @@ class VTACustomOrderStatuses {
      */
     public function add_default_text( $post_title, $post_id ) {
         $post = get_post($post_id);
-        list('path' => $path) = get_query_params();
+        [ 'path' => $path ] = get_query_params();
 
         // List Table only && is default order status...
         if (
@@ -451,14 +470,14 @@ class VTACustomOrderStatuses {
      * @return string[]
      */
     public function add_reorderable_quicklink( array $views ): array {
-        list('query_params' => $query_params) = get_query_params();
+        [ 'query_params' => $query_params ] = get_query_params();
 
         $len = count($views);
         $i   = 0;
         foreach ( $views as $key => $val ) {
             if ( $key === 'publish' ) {
                 // build link
-                $active_class = in_array($this->meta_reorderable_key, $query_params) ? "class='current'" : null;
+                $active_class      = in_array($this->meta_reorderable_key, $query_params) ? "class='current'" : null;
                 $reorderable_count = $this->get_reorderable_count();
                 $html              = "<a $active_class href='edit.php?post_type={$this->post_type}&#038postmeta={$this->meta_reorderable_key}'>Reorderable <span class='count'>($reorderable_count)</span></a>";
                 $reorderable_view  = [ 'reorderable' => $html ];

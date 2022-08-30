@@ -9,6 +9,8 @@ if ( !defined('ABSPATH') ) {
  */
 class VTACosEmailManager {
 
+    private string $reminder_emails_hook = 'vta_send_reminder_emails';
+
     private WC_Emails      $wc_emails;
     private VTACosSettings $settings;
 
@@ -27,6 +29,9 @@ class VTACosEmailManager {
 
         // Default Order Status for new orders
         add_action('woocommerce_checkout_order_created', [ $this, 'use_default_order_status' ], 10, 1);
+
+        // custom hook to send reminder emails
+        add_action($this->reminder_emails_hook, [ $this, 'send_reminder_emails' ]);
 
         $this->wc_emails->init(); // ensures we hook into "woocommerce_email_classes" if WC_Emails already instantiated
     }
@@ -49,7 +54,10 @@ class VTACosEmailManager {
 
             $custom_reminder_email_key = "{$custom_email_key}_Reminder";
             if ( $order_status->get_has_reminder_email() && !isset($emails[$custom_reminder_email_key]) ) {
-                $emails[$custom_reminder_email_key] = new VTACustomEmail($order_status, true);
+                $reminder_email = new VTACustomEmail($order_status, true);
+
+                $emails[$custom_reminder_email_key] = $reminder_email;
+                $this->schedule_reminder_emails($order_status, $reminder_email->get_reminder_time());
             }
         }
         return $emails;
@@ -59,21 +67,60 @@ class VTACosEmailManager {
      * Sends email for order status change
      * @param int $order_id
      * @param WC_Order $order
+     * @param bool|null $is_reminder
      * @return void
      */
-    public function send_email( int $order_id, WC_Order $order ): void {
+    public function send_email( int $order_id, WC_Order $order, bool $is_reminder = null ): void {
         try {
             $order_status    = VTACustomOrderStatus::get_cos_by_key($order->get_status());
             $this->wc_emails = WC_Emails::instance() ?? new WC_Emails(); // must re-initiate class to trigger custom email classes
-            do_action($order_status->get_email_action(), $order);
+            do_action($order_status->get_email_action() . ($is_reminder ? '_reminder' : ''), $order);
 
         } catch ( Exception $e ) {
             error_log("VTACosEmailManager::send_email() error. Could not send email for Order #$order_id - $e");
         }
     }
 
-    public function schedule_reminder_emails() {
+    /**
+     * Executes all reminder emails notifications for given time.
+     * @param VTACustomOrderStatus $order_status
+     * @param string $time
+     * @return void
+     */
+    public function schedule_reminder_emails( VTACustomOrderStatus $order_status, string $time = '08:00' ): void {
+        $tomorrow_time = $this->getDateTimePacific('+1 day');
 
+        preg_match('/(\d+):(\d+)/', $time, $matches);
+        [ 1 => $hours, 2 => $minutes ] = $matches;
+
+        $tomorrow_time->setTime((int)$hours ?? 0, (int)$minutes ?? 0);
+
+        if ( !wp_get_scheduled_event($this->reminder_emails_hook, [ $order_status ]) ) {
+            wp_schedule_single_event($tomorrow_time->getTimestamp(), $this->reminder_emails_hook, [ $order_status ]);
+        }
+    }
+
+    /**
+     * Mass sends reminder emails for all order statuses
+     * @param VTACustomOrderStatus $order_status
+     * @return void
+     */
+    public function send_reminder_emails( VTACustomOrderStatus $order_status ): void {
+        try {
+            $wc_orders_query = new WC_Order_Query([
+                'limit'  => -1,
+                'status' => $order_status->get_cos_key()
+            ]);
+
+            /** @var WC_Order[] $wc_orders */
+            $wc_orders = $wc_orders_query->get_orders();
+
+            foreach ( $wc_orders as $order ) {
+                $this->send_email($order->get_id(), $order, true);
+            }
+        } catch ( Exception $e ) {
+            error_log("VTACosEmailManager::send_reminder_emails() error - $e");
+        }
     }
 
     /**
@@ -153,6 +200,25 @@ class VTACosEmailManager {
         } catch ( Exception $e ) {
             error_log("VTAWooCommerce::get_default_status() error - $e");
             return null;
+        }
+    }
+
+    /**
+     * Returns DateTime object in Pacific Time Zone.
+     * @param string|null $date_str
+     * @return DateTime
+     */
+    private function getDateTimePacific( ?string $date_str = null ): DateTime {
+        $tz = new DateTimeZone('America/Los_Angeles');
+
+        try {
+            return new DateTime(empty($date_str) ? 'now' : $date_str, $tz);
+
+        } catch ( Exception $e ) {
+            error_log("Error at StoreHours::getDateTimePacific - $e");
+            $datetime = new DateTime();
+            $datetime->setTimezone($tz);
+            return $datetime;
         }
     }
 }

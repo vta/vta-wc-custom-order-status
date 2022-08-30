@@ -33,7 +33,7 @@ if ( $order && $billing_first_name && $billing_last_name ) : ?>
 
 if ( $main_content ?? null ) {
     ?>
-    <p><?php echo $main_content; ?></p>
+    <p><?php echo $main_content;  ?></p>
     <?php
 }
 

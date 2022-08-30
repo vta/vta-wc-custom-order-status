@@ -55,7 +55,7 @@ foreach ( $order->get_items() as $order_item ) {
 
 echo "\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n\n";
 
-echo 'This is an email sent as the order status has been changed to "Special".\n\n';
+echo "This is an email sent as the order status has been changed to \"$order_status\".\n\n";
 
 /**
  * Show user-defined additional content - this is set in each email's settings.

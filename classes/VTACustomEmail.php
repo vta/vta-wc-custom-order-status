@@ -33,7 +33,7 @@ class VTACustomEmail extends WC_Email {
         $this->template_plain = $is_reminder ? 'templates/custom-reminder-email-plain.php' : 'templates/custom-email-plain.php';
 
         // Triggers for this email
-        if ( $is_reminder )
+        if ( !$is_reminder )
             add_action($order_status->get_email_action(), [ $this, 'trigger' ], 10, 1);
         else
             add_action("{$order_status->get_email_action()}_reminder", [ $this, 'trigger' ], 10, 1);
@@ -87,10 +87,13 @@ class VTACustomEmail extends WC_Email {
     public function get_content_html() {
         ob_start();
         wc_get_template($this->template_html, [
-            'email_heading'      => $this->get_heading(),
-            'main_content'       => $this->get_main_content(),
-            'additional_content' => $this->get_additional_content(),
-            'order'              => $this->order
+            'email_heading'         => $this->get_heading(),
+            'main_content'          => $this->get_main_content(),
+            'additional_content'    => $this->get_additional_content(),
+            'order'                 => $this->order,
+            'has_complete_action'   => $this->has_complete_action(),
+            'complete_action_text'  => $this->get_complete_action_text(),
+            'complete_action_color' => $this->get_complete_action_color(),
         ], 'custom-templates', $this->template_base);
         return ob_get_clean();
     }
@@ -170,25 +173,32 @@ class VTACustomEmail extends WC_Email {
 
         // Reminder Options
         if ( $this->is_reminder ) {
-            $this->form_fields['reminder_time'] = [
+            $this->form_fields['reminder_time']         = [
                 'title'       => 'Scheduled Reminder Time',
                 'description' => 'Scheduled time to send reminder emails on weekdays.',
                 'type'        => 'time',
                 'default'     => '08:00',
                 'desc_tip'    => true,
             ];
-            $this->form_fields['has_complete_action'] = [
+            $this->form_fields['has_complete_action']   = [
                 'title'       => 'Has Complete Action',
                 'description' => 'Provides button for the user to complete their order.',
                 'type'        => 'checkbox',
                 'default'     => false,
                 'desc_tip'    => true,
             ];
-            $this->form_fields['complete_action_text'] = [
+            $this->form_fields['complete_action_text']  = [
                 'title'       => 'Complete Action Button Text',
                 'description' => 'Button Text for complete action (if applicable).',
                 'type'        => 'text',
                 'default'     => 'Complete',
+                'desc_tip'    => true,
+            ];
+            $this->form_fields['complete_action_color'] = [
+                'title'       => 'Complete Action Button Color',
+                'description' => 'Button Color for complete action (if applicable).',
+                'type'        => 'color',
+                'default'     => '#e53935',
                 'desc_tip'    => true,
             ];
         }
@@ -222,7 +232,11 @@ class VTACustomEmail extends WC_Email {
      * Text for action button (if applicable).
      * @return string
      */
-    public function has_complete_action_text(): string {
+    public function get_complete_action_text(): string {
         return $this->get_option('complete_action_text', 'Complete');
+    }
+
+    public function get_complete_action_color(): string {
+        return $this->get_option('complete_action_color', '#e53935');
     }
 }

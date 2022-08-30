@@ -72,6 +72,10 @@ class VTACosEmailManager {
         }
     }
 
+    public function schedule_reminder_emails() {
+
+    }
+
     /**
      * Assigns the default order status for newly created orders
      * @param WC_Order $order

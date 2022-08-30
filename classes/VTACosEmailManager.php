@@ -44,7 +44,12 @@ class VTACosEmailManager {
 
             $custom_email_key = "VTACustomEmail_$formatted_key";
             if ( !isset($emails[$custom_email_key]) ) {
-                $emails["VTACustomEmail_$formatted_key"] = $custom_email;
+                $emails[$custom_email_key] = $custom_email;
+            }
+
+            $custom_reminder_email_key = "{$custom_email_key}_Reminder";
+            if ( $order_status->get_has_reminder_email() && !isset($emails[$custom_reminder_email_key]) ) {
+                $emails[$custom_reminder_email_key] = new VTACustomEmail($order_status, true);
             }
         }
         return $emails;

@@ -9,7 +9,7 @@ class VTACustomOrderStatus {
     private string $post_type            = VTA_COS_CPT;
     private string $meta_color_key       = META_COLOR_KEY;
     private string $meta_reorderable_key = META_REORDERABLE_KEY;
-    private string $meta_has_reminder = META_HAS_REMINDER_KEY;
+    private string $meta_has_reminder_key = META_HAS_REMINDER_KEY;
 
     private WP_Post $post;
 
@@ -98,7 +98,7 @@ class VTACustomOrderStatus {
      * @return bool
      */
     public function get_has_reminder_email(): bool {
-        return (bool)get_post_meta($this->post->ID, $this->meta_reorderable_key, true);
+        return (bool)get_post_meta($this->post->ID, $this->meta_has_reminder_key, true);
     }
 
     /**

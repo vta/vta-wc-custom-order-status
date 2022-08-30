@@ -8,26 +8,35 @@
 class VTACustomEmail extends WC_Email {
 
     private WC_Order $order;
+    protected bool   $is_reminder;
 
     /**
      * @param VTACustomOrderStatus $order_status custom order status attributes
+     * @param bool $is_reminder denotes if class is reminder email
      */
-    public function __construct( VTACustomOrderStatus $order_status ) {
-        // Add email ID, title, description, heading, subject
-        $this->id             = "custom_email_{$order_status->get_cos_key()}";
-        $this->customer_email = true;
-        $this->title          = "{$order_status->get_cos_name()} Email";
-        $this->description    = "This email is received when an order status is changed to \"{$order_status->get_cos_name()}\".";
+    public function __construct( VTACustomOrderStatus $order_status, bool $is_reminder = false ) {
+        $this->is_reminder = $is_reminder;
 
-        $this->heading = "{$order_status->get_cos_name()}";
-        $this->subject = "{$order_status->get_cos_name()} (Order #{order_number}) - {order_date}";
+        // Add email ID, title, description, heading, subject
+        $this->id             = "custom_email_{$order_status->get_cos_key()}" . ($is_reminder ? '_reminder' : '');
+        $this->customer_email = true;
+        $this->title          = "{$order_status->get_cos_name()} Email" . ($is_reminder ? ' (Reminder)' : '');
+        $this->description    = $is_reminder
+            ? "This is a reminder email for Order Status \"{$order_status->get_cos_name()}\""
+            : "This email is received when an order status is changed to \"{$order_status->get_cos_name()}\".";
+
+        $this->heading = "{$order_status->get_cos_name()}" . ($is_reminder ? ' (Reminder)' : '');
+        $this->subject = "{$order_status->get_cos_name()} (Order #{order_number}) - {order_date}" . ($is_reminder ? ' (Reminder)' : '');
 
         // email template path
-        $this->template_html  = 'templates/custom-email-html.php';
-        $this->template_plain = 'templates/custom-email-plain.php';
+        $this->template_html  = $is_reminder ? 'templates/custom-reminder-email-html.php' : 'templates/custom-email-html.php';
+        $this->template_plain = $is_reminder ? 'templates/custom-reminder-email-plain.php' : 'templates/custom-email-plain.php';
 
         // Triggers for this email
-        add_action($order_status->get_email_action(), [ $this, 'trigger' ], 10, 1);
+        if ( $is_reminder )
+            add_action($order_status->get_email_action(), [ $this, 'trigger' ], 10, 1);
+        else
+            add_action("{$order_status->get_email_action()}_reminder", [ $this, 'trigger' ], 10, 1);
 
         // Call parent constructor
         parent::__construct();
@@ -62,7 +71,7 @@ class VTACustomEmail extends WC_Email {
             $this->order = $order;
             $recipient   = $order->get_billing_email();
 
-            $this->placeholders['{order_date}']              = wc_format_datetime( $order->get_date_created() );
+            $this->placeholders['{order_date}']              = wc_format_datetime($order->get_date_created());
             $this->placeholders['{order_number}']            = $order->get_order_number();
             $this->placeholders['{order_billing_full_name}'] = $order->get_formatted_billing_full_name();
 
@@ -101,7 +110,10 @@ class VTACustomEmail extends WC_Email {
         return ob_get_clean();
     }
 
-    // form fields that are displayed in WooCommerce->Settings->Emails
+    /**
+     * Form fields that are displayed in WooCommerce->Settings->Emails
+     * @return void
+     */
     public function init_form_fields() {
         $placeholder_text  = sprintf(__('Available placeholders: %s', 'woocommerce'), '<code>' . esc_html(implode('</code>, <code>', array_keys($this->placeholders))) . '</code>');
         $this->form_fields = [
@@ -125,7 +137,7 @@ class VTACustomEmail extends WC_Email {
                 'placeholder' => '',
                 'default'     => ''
             ],
-            'main_content' => [
+            'main_content'       => [
                 'title'       => 'Main content',
                 'description' => 'Text to appear above order details.' . ' ' . $placeholder_text,
                 'css'         => 'width:400px; height: 75px;',
@@ -158,7 +170,7 @@ class VTACustomEmail extends WC_Email {
     }
 
     /**
-     * Custom Dynamic field for main content above the Order Detaisl
+     * Custom Dynamic field for main content above the Order Details
      * @return string
      */
     public function get_main_content(): string {

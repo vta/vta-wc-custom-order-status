@@ -198,6 +198,8 @@ class VTACosSettingsManager {
      * @return void
      */
     public function render_settings_page(): void {
+        $reorderable_statuses = $this->settings->get_reorderable_statuses();
+        $reminder_statuses = $this->settings->get_reminder_statuses();
         include_once(plugin_dir_path(__DIR__) . '/admin/views/settings-page.php');
     }
 

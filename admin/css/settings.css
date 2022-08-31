@@ -61,3 +61,17 @@ button.ui-button:disabled[disabled].ui-button-icon-only.ui-dialog-titlebar-close
     background: #29588C !important;
     text-shadow: none !important;
 }
+
+.meta-table {
+    background: #fff;
+    border-collapse: collapse;
+}
+
+.meta-table td {
+    padding: 1rem;
+    text-align: center;
+    vertical-align: middle;
+    font-weight: 500;
+    font-size: 1rem;
+    border: 1px solid #e5e5e5;
+}

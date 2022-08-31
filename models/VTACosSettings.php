@@ -80,6 +80,24 @@ class VTACosSettings {
     }
 
     /**
+     * Returns Reminder statuses
+     * @return VTACustomOrderStatus[]
+     */
+    public function get_reminder_statuses(): array {
+        try {
+            return array_values(
+                array_filter(
+                    array_map(fn( int $order_status_id ) => new VTACustomOrderStatus($order_status_id), $this->get_arrangement()),
+                    fn( VTACustomOrderStatus $order_status ) => $order_status->get_has_reminder_email()
+                )
+            );
+        } catch ( Exception $e ) {
+            error_log("VTACosSettings::get_reminder_statuses() error - $e");
+            return [];
+        }
+    }
+
+    /**
      * Returns object in the format to be stored in update_options
      * @return array
      */

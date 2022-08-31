@@ -61,8 +61,8 @@ class VTAWooCommerce {
         add_action('admin_head', [ $this, 'add_status_col_styles' ]);
         add_filter("bulk_actions-edit-{$this->shop_post_type}", [ $this, 'update_custom_bulk_actions' ], 11, 1);
 
-        // Order Status for new order statuses
-        add_action('woocommerce_checkout_order_processed', [ $this, 'use_default_order_status' ], 10, 3);
+        // Add Re-orderable statuses
+        add_filter('woocommerce_valid_order_statuses_for_order_again', [ $this, 'add_reorderable_statuses' ], 9, 1);
     }
 
     // POST STATUS / ORDER STATUS REGISTRATION CALLBACKS //
@@ -262,28 +262,20 @@ class VTAWooCommerce {
         }
     }
 
-    // WC AUTOMATIONS //
+    // RE-ORDERABLE //
 
     /**
-     * Assigns the default order status for newly created orders
-     * @param int $order_id
-     * @param array $posted_data
-     * @param WC_Order $order
-     * @return void
+     * Add re-orderable statuses from our plugin settings
+     * NOTE: add status key without "wc_" prepended
+     * @param array $order_statuses
+     * @return array
      */
-    public function use_default_order_status( int $order_id, array $posted_data, WC_Order $order ): void {
-        $default_status_key = $this->get_default_status_key();
-        $order->update_status($default_status_key);
-
-        // need to trigger customer "Processing" email here because we do not go through "Processing" status initially
-        if ( preg_match('/processing/', $order->get_status()) ) {
-            WC_Emails::instance();
-            $processing_email = new WC_Email_Customer_Processing_Order();
-            $processing_email->trigger($order_id);
-            // need to send admin "New Order" email as well
-            $new_order_email = new WC_Email_New_Order();
-            $new_order_email->trigger($order_id);
+    public function add_reorderable_statuses( array $order_statuses ): array {
+        foreach ( $this->settings->get_reorderable_statuses() as $order_status ) {
+            if ( !in_array($order_status->get_cos_key(), $order_statuses) )
+                $order_statuses[] = $order_status->get_cos_key();
         }
+        return $order_statuses;
     }
 
     // PRIVATE METHODS //
@@ -364,22 +356,6 @@ class VTAWooCommerce {
         );
 
         return array_values(array_map(fn( VTACustomOrderStatus $order_status ) => $order_status->get_cos_key($with_prefix), $filtered_cos));
-    }
-
-    /**
-     * Returns the current default order status key defined by plugin settings.
-     * @return string i.e. "wc-received"
-     */
-    private function get_default_status_key(): ?string {
-        $default_order_status_id = $this->settings->get_default();
-
-        try {
-            $order_status = new VTACustomOrderStatus($default_order_status_id);
-            return $order_status->get_cos_key(true);
-        } catch ( Exception $e ) {
-            error_log("VTAWooCommerce::get_default_status() error - $e");
-            return null;
-        }
     }
 
 }

@@ -13,7 +13,7 @@ class VTACosSettings {
 
     public function __construct( array $settings ) {
         foreach ( $settings as $key => $value ) {
-            // special exception for arrangment. Stored as string in form save
+            // special exception for arrangement. Stored as string in form save
             if ( $key === 'order_status_arrangement' && is_string($value) ) {
                 $arr          = json_decode($value) ?? [];
                 $this->{$key} = $arr;
@@ -59,6 +59,42 @@ class VTACosSettings {
      */
     public function get_arrangement(): array {
         return array_map(fn( $post_id ) => (int)$post_id, $this->order_status_arrangement ?? []);
+    }
+
+    /**
+     * Returns Reorderable statuses
+     * @return VTACustomOrderStatus[]
+     */
+    public function get_reorderable_statuses(): array {
+        try {
+            return array_values(
+                array_filter(
+                    array_map(fn( int $order_status_id ) => new VTACustomOrderStatus($order_status_id), $this->get_arrangement()),
+                    fn( VTACustomOrderStatus $order_status ) => $order_status->get_cos_reorderable()
+                )
+            );
+        } catch ( Exception $e ) {
+            error_log("VTACosSettings::get_reorderable_statuses() error - $e");
+            return [];
+        }
+    }
+
+    /**
+     * Returns Reminder statuses
+     * @return VTACustomOrderStatus[]
+     */
+    public function get_reminder_statuses(): array {
+        try {
+            return array_values(
+                array_filter(
+                    array_map(fn( int $order_status_id ) => new VTACustomOrderStatus($order_status_id), $this->get_arrangement()),
+                    fn( VTACustomOrderStatus $order_status ) => $order_status->get_has_reminder_email()
+                )
+            );
+        } catch ( Exception $e ) {
+            error_log("VTACosSettings::get_reminder_statuses() error - $e");
+            return [];
+        }
     }
 
     /**

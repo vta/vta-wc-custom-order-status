@@ -30,9 +30,10 @@
 const VTA_WC_CUSTOM_ORDER_STATUS_VERSION = '0.6';
 const VTA_WC_COS_PLUGIN_NAME             = 'vta-wc-custom-order-status';
 // Post
-const VTA_COS_CPT          = 'vta_order_status';
-const META_COLOR_KEY       = 'vta_cos_color';
-const META_REORDERABLE_KEY = 'vta_cos_is_reorderable';
+const VTA_COS_CPT           = 'vta_order_status';
+const META_COLOR_KEY        = 'vta_cos_color';
+const META_REORDERABLE_KEY  = 'vta_cos_is_reorderable';
+const META_HAS_REMINDER_KEY = 'vta_cos_has_reminder';
 // Settings/Options
 const VTA_COS_SETTINGS_NAME        = 'vta_order_status_options';
 const VTA_COS_SETTINGS_PAGE        = 'vta_order_status_settings';
@@ -43,6 +44,11 @@ const ORDER_STATUS_ARRANGEMENT_KEY = 'order_status_arrangement';
 /** Global files for plugin and/or theme usage **/
 require_once 'admin/class-vta-wc-custom-order-status-admin.php';
 require_once 'utils/common.php';
+// WC Dependencies (before plugins are loaded)
+include_once ABSPATH . '/wp-content/plugins/woocommerce/includes/abstracts/abstract-wc-settings-api.php';
+include_once ABSPATH . '/wp-content/plugins/woocommerce/includes/emails/class-wc-email.php';
+include_once ABSPATH . '/wp-content/plugins/woocommerce/includes/class-wc-emails.php';
+include_once ABSPATH . '/wp-content/plugins/woocommerce/woocommerce.php';
 // Models
 require_once 'models/VTACustomOrderStatus.php';
 require_once 'models/VTACosSettings.php';
@@ -50,6 +56,8 @@ require_once 'models/VTACosSettings.php';
 require_once 'classes/VTACustomOrderStatuses.php';
 require_once 'classes/VTACosSettingsManager.php';
 require_once 'classes/VTAWooCommerce.php';
+require_once 'classes/VTACustomEmail.php';
+require_once 'classes/VTACosEmailManager.php';
 
 // If this file is called directly, abort.
 if ( !defined('WPINC') ) {

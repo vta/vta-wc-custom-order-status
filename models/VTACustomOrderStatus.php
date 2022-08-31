@@ -9,6 +9,7 @@ class VTACustomOrderStatus {
     private string $post_type            = VTA_COS_CPT;
     private string $meta_color_key       = META_COLOR_KEY;
     private string $meta_reorderable_key = META_REORDERABLE_KEY;
+    private string $meta_has_reminder_key = META_HAS_REMINDER_KEY;
 
     private WP_Post $post;
 
@@ -33,7 +34,6 @@ class VTACustomOrderStatus {
 
         $this->post = $wp_post;
     }
-
 
     /**
      * Gets color associated with Order Statuses
@@ -83,5 +83,38 @@ class VTACustomOrderStatus {
      */
     public function get_post(): WP_Post {
         return $this->post;
+    }
+
+    /**
+     * Returns the hook name of for triggering its custom email
+     * @return string
+     */
+    public function get_email_action(): string {
+        return "custom_email_{$this->get_cos_key()}";
+    }
+
+    /**
+     * Returns if order status has reminder email.
+     * @return bool
+     */
+    public function get_has_reminder_email(): bool {
+        return (bool)get_post_meta($this->post->ID, $this->meta_has_reminder_key, true);
+    }
+
+    /**
+     * Returns custom order status obj when searched by $key
+     * @param string $cos_key ex. "processing" or "wc-processing"
+     * @return VTACustomOrderStatus
+     * @throws Exception
+     */
+    static public function get_cos_by_key( string $cos_key ): VTACustomOrderStatus {
+        $wp_query = new WP_Query([
+            'post_type'      => VTA_COS_CPT,
+            'post_status'    => 'publish',
+            'post_name__in'  => [ "wc-$cos_key", $cos_key ],
+            'posts_per_page' => 1
+        ]);
+
+        return new VTACustomOrderStatus($wp_query->post);
     }
 }

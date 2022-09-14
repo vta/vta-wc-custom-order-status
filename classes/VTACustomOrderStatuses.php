@@ -20,6 +20,9 @@ class VTACustomOrderStatuses {
     private string         $settings_name                = VTA_COS_SETTINGS_NAME;
     private string         $order_status_arrangement_key = ORDER_STATUS_ARRANGEMENT_KEY;
 
+    // HELP PAGE vars
+    private string $help_page_slug = 'vta-cos-help';
+
     /**
      * Encapsulates hooks in class constructors. Ditches loader method set up by boilerplate.
      * @param string $plugin_name
@@ -47,6 +50,9 @@ class VTACustomOrderStatuses {
         add_action('pre_get_posts', [ $this, 'define_custom_col_sorting' ], 10, 1);
         add_filter('the_title', [ $this, 'add_default_text' ], 10, 2);
         add_filter("views_edit-{$this->post_type}", [ $this, 'add_reorderable_quicklink' ], 10, 1);
+
+        // plugin help page
+        add_action('admin_menu', [ $this, 'register_help_page' ]);
     }
 
     /**
@@ -83,6 +89,17 @@ class VTACustomOrderStatuses {
             wp_enqueue_style(
                 "{$this->plugin_name}_edit_css",
                 plugin_dir_url(__DIR__) . 'admin/css/edit.css',
+                [],
+                $this->plugin_version
+            );
+        }
+
+        // Help page
+        $is_help_page = in_array($this->post_type, $query_params) && in_array($this->help_page_slug, $query_params);
+        if ( is_admin() && $is_help_page ) {
+            wp_enqueue_style(
+                "{$this->plugin_name}_help_css",
+                plugin_dir_url(__DIR__) . 'admin/css/help.css',
                 [],
                 $this->plugin_version
             );
@@ -491,6 +508,31 @@ class VTACustomOrderStatuses {
             $i++;
         }
         return $views;
+    }
+
+    // HELP PAGE //
+
+    /**
+     * Inserts help page as a submenu for Custom Plugin settings.
+     * @return void
+     */
+    public function register_help_page(): void {
+        add_submenu_page(
+            "edit.php?post_type={$this->post_type}",
+            'VTA Custom Order Status Help',
+            'Help',
+            'manage_options',
+            $this->help_page_slug,
+            [ $this, 'render_help_page' ]
+        );
+    }
+
+    /**
+     * Renders Help page HTML.
+     * @return void
+     */
+    public function render_help_page(): void {
+        include_once(plugin_dir_path(__DIR__) . '/admin/views/help.php');
     }
 
     // PRIVATE METHODS

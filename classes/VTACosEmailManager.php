@@ -18,7 +18,7 @@ class VTACosEmailManager {
     private array $no_email_statuses;
 
     public function __construct( VTACosSettings $settings ) {
-        $this->wc_emails = WC_Emails::instance() ?? new WC_Emails();
+        $this->wc_emails = WC_Emails::instance();
         $this->settings  = $settings;
 
         $existing_email_ids      = $this->get_existing_emails();
@@ -32,8 +32,6 @@ class VTACosEmailManager {
 
         // custom hook to send reminder emails
         add_action($this->reminder_emails_hook, [ $this, 'send_reminder_emails' ]);
-
-        $this->wc_emails->init(); // ensures we hook into "woocommerce_email_classes" if WC_Emails already instantiated
     }
 
     /**
@@ -73,7 +71,8 @@ class VTACosEmailManager {
     public function send_email( int $order_id, WC_Order $order, bool $is_reminder = null ): void {
         try {
             $order_status    = VTACustomOrderStatus::get_cos_by_key($order->get_status());
-            $this->wc_emails = WC_Emails::instance() ?? new WC_Emails(); // must re-initiate class to trigger custom email classes
+            $this->wc_emails = WC_Emails::instance(); // must re-initiate class to trigger custom email classes
+            $this->wc_emails->init(); // initiate only for custom emails...
             do_action($order_status->get_email_action() . ($is_reminder ? '_reminder' : ''), $order);
 
         } catch ( Exception $e ) {

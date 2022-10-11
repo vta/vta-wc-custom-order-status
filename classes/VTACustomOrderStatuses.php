@@ -38,21 +38,24 @@ class VTACustomOrderStatuses {
         $this->plugin_version = $plugin_version;
         $this->settings       = $settings;
 
-        add_action('admin_enqueue_scripts', [ $this, 'enqueue_scripts' ]);
         add_action('init', [ $this, 'register_custom_order_statuses' ]);
-        add_action('admin_init', [ $this, 'customize_edit_screen' ]);
         add_action("save_post_{$this->post_type}", [ $this, 'save_post' ], 11, 3);
 
-        // list table hooks
-        add_filter("manage_{$this->post_type}_posts_columns", [ $this, 'add_custom_col' ], 10, 1);
-        add_action("manage_{$this->post_type}_posts_custom_column", [ $this, 'inject_custom_col_data' ], 10, 2);
-        add_filter("manage_edit-{$this->post_type}_sortable_columns", [ $this, 'add_custom_col_sorting' ], 10, 1);
-        add_action('pre_get_posts', [ $this, 'define_custom_col_sorting' ], 10, 1);
-        add_filter('the_title', [ $this, 'add_default_text' ], 10, 2);
-        add_filter("views_edit-{$this->post_type}", [ $this, 'add_reorderable_quicklink' ], 10, 1);
+        if ( is_admin() ) {
+            add_action('admin_enqueue_scripts', [ $this, 'enqueue_scripts' ]);
+            add_action('admin_init', [ $this, 'customize_edit_screen' ]);
 
-        // plugin help page
-        add_action('admin_menu', [ $this, 'register_help_page' ]);
+            // list table hooks
+            add_filter("manage_{$this->post_type}_posts_columns", [ $this, 'add_custom_col' ], 10, 1);
+            add_action("manage_{$this->post_type}_posts_custom_column", [ $this, 'inject_custom_col_data' ], 10, 2);
+            add_filter("manage_edit-{$this->post_type}_sortable_columns", [ $this, 'add_custom_col_sorting' ], 10, 1);
+            add_action('pre_get_posts', [ $this, 'define_custom_col_sorting' ], 10, 1);
+            add_filter('the_title', [ $this, 'add_default_text' ], 10, 2);
+            add_filter("views_edit-{$this->post_type}", [ $this, 'add_reorderable_quicklink' ], 10, 1);
+
+            // plugin help page
+            add_action('admin_menu', [ $this, 'register_help_page' ]);
+        }
     }
 
     /**
@@ -135,7 +138,8 @@ class VTACustomOrderStatuses {
                 'show_in_menu' => true,
                 'description'  => 'Customizable WooCommerce custom order statuses that re-purposed for VTA Document Services workflow.',
                 'hierarchical' => false,
-                'menu_icon'    => 'dashicons-clipboard'
+                'menu_icon'    => 'dashicons-clipboard',
+                'supports'     => [ 'title', 'revisions' ]
             ]
         );
     }
@@ -150,7 +154,7 @@ class VTACustomOrderStatuses {
     public function customize_edit_screen(): void {
         // remove certain post type elements from "Custom Order Status" post types
         // (we can set also, but we want to customize every input from post-new.php)
-        remove_post_type_support($this->post_type, 'editor');
+//        remove_post_type_support($this->post_type, 'editor');
 
         $this->replace_title_placeholder();
         $this->add_meta_boxes();

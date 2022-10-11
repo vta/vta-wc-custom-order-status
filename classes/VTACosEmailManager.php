@@ -94,7 +94,10 @@ class VTACosEmailManager {
 
         $tomorrow_time->setTime((int)$hours ?? 0, (int)$minutes ?? 0);
 
-        if ( !wp_get_scheduled_event($this->reminder_emails_hook, [ $order_status ]) ) {
+        $tomorrow_day = $tomorrow_time->format('l');
+        $is_weekend = $tomorrow_day === 'Saturday' || $tomorrow_day === 'Sunday';
+
+        if ( !wp_get_scheduled_event($this->reminder_emails_hook, [ $order_status ]) && !$is_weekend ) {
             wp_schedule_single_event($tomorrow_time->getTimestamp(), $this->reminder_emails_hook, [ $order_status ]);
         }
     }

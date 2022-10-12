@@ -18,11 +18,15 @@ class VTACosEmailManager {
     private array $no_email_statuses;
 
     public function __construct( VTACosSettings $settings ) {
+
         $this->wc_emails = WC_Emails::instance();
         $this->settings  = $settings;
 
         $existing_email_ids      = $this->get_existing_emails();
         $this->no_email_statuses = $this->filter_no_email_status($existing_email_ids);
+
+        // override default WC emails templates
+        add_filter('woocommerce_locate_template', [ $this, 'use_plugin_wc_overrides' ]);
 
         // add custom email classes
         add_filter('woocommerce_email_classes', [ $this, 'add_custom_emails' ], 10, 1);
@@ -36,6 +40,8 @@ class VTACosEmailManager {
         // must re-initialize emails within Emails settings page to access Email settings
         $this->add_custom_emails_settings();
     }
+
+    // CUSTOM EMAILS //
 
     /**
      * Registers our custom email classes
@@ -139,6 +145,34 @@ class VTACosEmailManager {
 
         $new_order_email = new WC_Email_New_Order();
         $new_order_email->trigger($order->get_id());
+    }
+
+    // WOOCOMMERCE TEMPLATE OVERRIDES //
+
+    /**
+     * Locate WC email templates within this plugin to override default WC email templates.
+     * NOTE: This does not override WC templates defined within a theme
+     * @param string $template_name default template file path
+     * @param string $template_path template file slug
+     * @param string $default_path template file name
+     * @return string
+     */
+    public function use_plugin_wc_overrides(
+        string $template_name,
+        string $template_path = '',
+        string $default_path = ''
+    ): string {
+        $wc_templates_dir = ABSPATH . 'wp-content/plugins/woocommerce/templates/';
+
+        // check if template file exists within plugin defined templates
+        if ( preg_match("#$wc_templates_dir#", $template_name,) ) {
+            $rel_template_path = str_replace($wc_templates_dir, '', $template_name);
+            $plugin_path       = untrailingslashit(plugin_dir_path(__DIR__));
+
+            $target_template = "{$plugin_path}/woocommerce/{$rel_template_path}";
+            $template_name   = file_exists($target_template) ? $target_template : $template_name;
+        }
+        return $template_name;
     }
 
     // PRIVATE METHODS //

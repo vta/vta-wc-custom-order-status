@@ -27,7 +27,7 @@
 
 /** PLUGIN CONSTANTS **/
 // Plugin
-const VTA_WC_CUSTOM_ORDER_STATUS_VERSION = '0.6';
+const VTA_WC_CUSTOM_ORDER_STATUS_VERSION = '0.9';
 const VTA_WC_COS_PLUGIN_NAME             = 'vta-wc-custom-order-status';
 // Post
 const VTA_COS_CPT           = 'vta_order_status';

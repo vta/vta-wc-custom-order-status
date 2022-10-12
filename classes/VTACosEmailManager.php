@@ -32,6 +32,9 @@ class VTACosEmailManager {
 
         // custom hook to send reminder emails
         add_action($this->reminder_emails_hook, [ $this, 'send_reminder_emails' ]);
+
+        // must re-initialize emails within Emails settings page to access Email settings
+        $this->add_custom_emails_settings();
     }
 
     /**
@@ -95,7 +98,7 @@ class VTACosEmailManager {
         $tomorrow_time->setTime((int)$hours ?? 0, (int)$minutes ?? 0);
 
         $tomorrow_day = $tomorrow_time->format('l');
-        $is_weekend = $tomorrow_day === 'Saturday' || $tomorrow_day === 'Sunday';
+        $is_weekend   = $tomorrow_day === 'Saturday' || $tomorrow_day === 'Sunday';
 
         if ( !wp_get_scheduled_event($this->reminder_emails_hook, [ $order_status ]) && !$is_weekend ) {
             wp_schedule_single_event($tomorrow_time->getTimestamp(), $this->reminder_emails_hook, [ $order_status ]);
@@ -221,6 +224,19 @@ class VTACosEmailManager {
             $datetime = new DateTime();
             $datetime->setTimezone($tz);
             return $datetime;
+        }
+    }
+
+    /**
+     * Checks if we are in WC Email Settings page. If so, reinitialize emails to include in custom options.
+     * @return void
+     */
+    private function add_custom_emails_settings(): void {
+        [ 'query_params' => $query_params ] = get_query_params();
+
+        // re-initialize WC_Emails if in email settings page
+        if ( is_admin() && in_array('wc-settings', $query_params) && in_array('email', $query_params) ) {
+            $this->wc_emails->init();
         }
     }
 }

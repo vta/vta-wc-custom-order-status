@@ -49,6 +49,7 @@ class VTACosEmailManager {
      * @return array
      */
     public function add_custom_emails( array $emails ): array {
+        // inject Custom Email Reminders for custom order statuses
         foreach ( $this->no_email_statuses as $order_status ) {
             $order_status_key = $order_status->get_cos_key();
             $formatted_key    = str_replace('-', '_', ucwords($order_status_key, '-'));
@@ -59,6 +60,7 @@ class VTACosEmailManager {
                 $emails[$custom_email_key] = $custom_email;
             }
 
+            // Create Custom Reminder Emails if applicable
             $custom_reminder_email_key = "{$custom_email_key}_Reminder";
             if ( $order_status->get_has_reminder_email() && !isset($emails[$custom_reminder_email_key]) ) {
                 $reminder_email = new VTACustomEmail($order_status, true);
@@ -165,7 +167,7 @@ class VTACosEmailManager {
         $wc_templates_dir = ABSPATH . 'wp-content/plugins/woocommerce/templates/';
 
         // check if template file exists within plugin defined templates
-        if ( preg_match("#$wc_templates_dir#", $template_name,) ) {
+        if ( preg_match("#$wc_templates_dir#", $template_name) ) {
             $rel_template_path = str_replace($wc_templates_dir, '', $template_name);
             $plugin_path       = untrailingslashit(plugin_dir_path(__DIR__));
 
@@ -174,6 +176,16 @@ class VTACosEmailManager {
         }
         return $template_name;
     }
+
+    // GLOBAL EMAIL SETTINGS (DEFAULT & CUSTOM WC EMAILS)
+
+//    /**
+//     * Adds Main Content to all email fields
+//     * @return void
+//     */
+//    public function add_main_content_field() {
+//
+//    }
 
     // PRIVATE METHODS //
 
@@ -207,7 +219,9 @@ class VTACosEmailManager {
 
             foreach ( $order_statuses as $order_status ) {
                 $has_template = current(array_filter($existing_email_ids, function ( string $id /** i.e. "customer_completed_order" */ ) use ( $order_status ) {
-                    return preg_match("/{$order_status->get_cos_key(false)}/", $id);
+                    $cos_key = $order_status->get_cos_key(); // order status key
+                    $cos_key_hyphen = str_replace('-', '_', $cos_key);
+                    return preg_match("/($cos_key)|($cos_key_hyphen)/", $id);
                 }));
 
                 // add order status without email template

@@ -49,6 +49,29 @@ class VTACosEmailManager {
      * @return array
      */
     public function add_custom_emails( array $emails ): array {
+        // HARDCODE & OVERRIDE DEFAULT EMAILS
+        // mainly for adding main content to the following email
+        // TODO - make this dynamic in the future
+        try {
+            foreach ( $this->settings->get_arrangement() ?? [] as $post_id ) {
+                $vta_order_status = new VTACustomOrderStatus($post_id);
+                // PROCESSING
+                if ( $vta_order_status->get_cos_key() === 'processing' ) {
+                    $emails['WC_Email_Customer_Processing_Order'] = new VTACustomEmail($vta_order_status);
+                }
+                // ON-HOLD
+                if ( $vta_order_status->get_cos_key() === 'on-hold' ) {
+                    $emails['WC_Email_Customer_On_Hold_Order'] = new VTACustomEmail($vta_order_status);
+                }
+                // COMPLETED
+                if ( $vta_order_status->get_cos_key() === 'completed' ) {
+                    $emails['WC_Email_Customer_Completed_Order'] = new VTACustomEmail($vta_order_status);
+                }
+            }
+        } catch ( Exception $e ) {
+            error_log("Cannot use custom emails for default WC statuses - $e");
+        }
+
         // inject Custom Email Reminders for custom order statuses
         foreach ( $this->no_email_statuses as $order_status ) {
             $order_status_key = $order_status->get_cos_key();
@@ -177,16 +200,6 @@ class VTACosEmailManager {
         return $template_name;
     }
 
-    // GLOBAL EMAIL SETTINGS (DEFAULT & CUSTOM WC EMAILS)
-
-//    /**
-//     * Adds Main Content to all email fields
-//     * @return void
-//     */
-//    public function add_main_content_field() {
-//
-//    }
-
     // PRIVATE METHODS //
 
     /**
@@ -219,7 +232,7 @@ class VTACosEmailManager {
 
             foreach ( $order_statuses as $order_status ) {
                 $has_template = current(array_filter($existing_email_ids, function ( string $id /** i.e. "customer_completed_order" */ ) use ( $order_status ) {
-                    $cos_key = $order_status->get_cos_key(); // order status key
+                    $cos_key        = $order_status->get_cos_key(); // order status key
                     $cos_key_hyphen = str_replace('-', '_', $cos_key);
                     return preg_match("/($cos_key)|($cos_key_hyphen)/", $id);
                 }));

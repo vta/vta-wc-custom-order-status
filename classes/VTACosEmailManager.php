@@ -17,6 +17,13 @@ class VTACosEmailManager {
     /** @var VTACustomOrderStatus[] */
     private array $no_email_statuses;
 
+    /** @var string[] hardcoded default statuses. Emails that we want to override with our custom class & templates   */
+    private array $default_order_statuses = [
+        'processing',
+        'on-hold',
+        'cancelled'
+    ];
+
     public function __construct( VTACosSettings $settings ) {
 
         $this->wc_emails = WC_Emails::instance();
@@ -241,7 +248,11 @@ class VTACosEmailManager {
                 // also create action to send email template for that particular order status change
                 if ( !$has_template ) {
                     $no_email_statuses[] = $order_status;
-                    add_action("woocommerce_order_status_{$order_status->get_cos_key(false)}", [ $this, 'send_email' ], 10, 2);
+                    add_action("woocommerce_order_status_{$order_status->get_cos_key()}", [ $this, 'send_email' ], 10, 2);
+                }
+                // also created custom trigger action for hardcoded default order status
+                foreach ( $this->default_order_statuses as $cos_key ) {
+                    add_action("woocommerce_order_status_{$cos_key}", [ $this, 'send_email' ], 10, 2);
                 }
             }
 

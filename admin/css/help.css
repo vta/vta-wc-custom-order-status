@@ -1,0 +1,49 @@
+.help-page-container {
+    background: #fff;
+    padding: 1rem;
+}
+
+.help-page-container p {
+    max-width: 1440px;
+    font-size: 1rem;
+}
+
+figure {
+    border: 1px dashed;
+    padding: 1rem;
+    background: radial-gradient(#a8c6ed, transparent);
+    display: flex;
+    max-width: 1080px;
+    flex-direction: column;
+    align-items: center;
+}
+
+figure figcaption {
+    font-size: 1rem;
+    padding: 10px;
+}
+
+table {
+    max-width: 1080px;
+    border: 1px solid #cecece;
+    border-collapse: collapse;
+}
+
+table colgroup col.field-col {
+    width: 175px;
+}
+
+table colgroup col.example-col {
+    width: 250px;
+}
+
+table td,
+table th {
+    border: 1px solid #cecece;
+    padding: 1rem;
+}
+
+table td:first-of-type {
+    text-align: center;
+    font-weight: 500;
+}

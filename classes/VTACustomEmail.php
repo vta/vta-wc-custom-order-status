@@ -4,6 +4,8 @@
  * @title VTACustomEmail
  * Extends the core WC_Email class. This email is meant to compliment VTA's Custom Order Status.
  * Reminder Emails are also configured here to allow order status to have 2 emails per order status.
+ * NOTE: These should only be used for order status notifications. This email class will not work with
+ * forgotten passwords, new user, etc.
  */
 class VTACustomEmail extends WC_Email {
 
@@ -51,6 +53,8 @@ class VTACustomEmail extends WC_Email {
             '{order_date}'              => '',
             '{order_number}'            => '',
             '{order_billing_full_name}' => '',
+            '{site_title}'              => '',
+            '{site_url}'                => '',
         ];
 
     }
@@ -74,9 +78,13 @@ class VTACustomEmail extends WC_Email {
             $this->placeholders['{order_date}']              = wc_format_datetime($order->get_date_created());
             $this->placeholders['{order_number}']            = $order->get_order_number();
             $this->placeholders['{order_billing_full_name}'] = $order->get_formatted_billing_full_name();
+            $this->placeholders['{site_title}']              = $this->get_blogname();
+            $this->placeholders['{site_url}']                = site_url();
 
-            // send the email
-            $this->send($recipient, $this->get_subject(), $this->get_content(), $this->get_headers(), []);
+            // send the email only if use enabled this notification
+            if ( $this->is_enabled() && $this->get_recipient() ) {
+                $this->send($recipient, $this->get_subject(), $this->get_content(), $this->get_headers(), []);
+            }
         }
     }
 
@@ -91,6 +99,7 @@ class VTACustomEmail extends WC_Email {
             'main_content'          => $this->get_main_content(),
             'additional_content'    => $this->get_additional_content(),
             'order'                 => $this->order,
+            'site_url'              => site_url(),
             'has_complete_action'   => $this->has_complete_action(),
             'complete_action_text'  => $this->get_complete_action_text(),
             'complete_action_color' => $this->get_complete_action_color(),
@@ -205,11 +214,12 @@ class VTACustomEmail extends WC_Email {
     }
 
     /**
-     * Custom Dynamic field for main content above the Order Details
+     * Custom Dynamic field for main content above the Order Details.
+     * Add wrap around format string to update merge tags.
      * @return string
      */
     public function get_main_content(): string {
-        return $this->get_option('main_content', '');
+        return $this->format_string($this->get_option('main_content', ''));
     }
 
     /**

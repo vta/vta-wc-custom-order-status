@@ -44,7 +44,7 @@ if ( $main_content ?? null ) {
 if ( $has_complete_action ?? false ) :
     ?>
 
-    <table><!-- CALL-TO-ACTION BUTTON -->
+    <table style="margin: auto;"><!-- CALL-TO-ACTION BUTTON -->
         <tr>
             <td style="padding: 10px 0 20px 0">
                 <div>

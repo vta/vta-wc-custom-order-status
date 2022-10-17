@@ -17,12 +17,23 @@ class VTACosEmailManager {
     /** @var VTACustomOrderStatus[] */
     private array $no_email_statuses;
 
+    /** @var string[] hardcoded default statuses. Emails that we want to override with our custom class & templates   */
+    private array $default_order_statuses = [
+        'processing',
+        'on-hold',
+        'cancelled'
+    ];
+
     public function __construct( VTACosSettings $settings ) {
-        $this->wc_emails = WC_Emails::instance() ?? new WC_Emails();
+
+        $this->wc_emails = WC_Emails::instance();
         $this->settings  = $settings;
 
         $existing_email_ids      = $this->get_existing_emails();
         $this->no_email_statuses = $this->filter_no_email_status($existing_email_ids);
+
+        // override default WC emails templates
+        add_filter('woocommerce_locate_template', [ $this, 'use_plugin_wc_overrides' ]);
 
         // add custom email classes
         add_filter('woocommerce_email_classes', [ $this, 'add_custom_emails' ], 10, 1);
@@ -33,8 +44,11 @@ class VTACosEmailManager {
         // custom hook to send reminder emails
         add_action($this->reminder_emails_hook, [ $this, 'send_reminder_emails' ]);
 
-        $this->wc_emails->init(); // ensures we hook into "woocommerce_email_classes" if WC_Emails already instantiated
+        // must re-initialize emails within Emails settings page to access Email settings
+        $this->add_custom_emails_settings();
     }
+
+    // CUSTOM EMAILS //
 
     /**
      * Registers our custom email classes
@@ -42,6 +56,30 @@ class VTACosEmailManager {
      * @return array
      */
     public function add_custom_emails( array $emails ): array {
+        // HARDCODE & OVERRIDE DEFAULT EMAILS
+        // mainly for adding main content to the following email
+        // TODO - make this dynamic in the future
+        try {
+            foreach ( $this->settings->get_arrangement() ?? [] as $post_id ) {
+                $vta_order_status = new VTACustomOrderStatus($post_id);
+                // PROCESSING
+                if ( $vta_order_status->get_cos_key() === 'processing' ) {
+                    $emails['WC_Email_Customer_Processing_Order'] = new VTACustomEmail($vta_order_status);
+                }
+                // ON-HOLD
+                if ( $vta_order_status->get_cos_key() === 'on-hold' ) {
+                    $emails['WC_Email_Customer_On_Hold_Order'] = new VTACustomEmail($vta_order_status);
+                }
+                // COMPLETED
+                if ( $vta_order_status->get_cos_key() === 'completed' ) {
+                    $emails['WC_Email_Customer_Completed_Order'] = new VTACustomEmail($vta_order_status);
+                }
+            }
+        } catch ( Exception $e ) {
+            error_log("Cannot use custom emails for default WC statuses - $e");
+        }
+
+        // inject Custom Email Reminders for custom order statuses
         foreach ( $this->no_email_statuses as $order_status ) {
             $order_status_key = $order_status->get_cos_key();
             $formatted_key    = str_replace('-', '_', ucwords($order_status_key, '-'));
@@ -52,6 +90,7 @@ class VTACosEmailManager {
                 $emails[$custom_email_key] = $custom_email;
             }
 
+            // Create Custom Reminder Emails if applicable
             $custom_reminder_email_key = "{$custom_email_key}_Reminder";
             if ( $order_status->get_has_reminder_email() && !isset($emails[$custom_reminder_email_key]) ) {
                 $reminder_email = new VTACustomEmail($order_status, true);
@@ -73,7 +112,8 @@ class VTACosEmailManager {
     public function send_email( int $order_id, WC_Order $order, bool $is_reminder = null ): void {
         try {
             $order_status    = VTACustomOrderStatus::get_cos_by_key($order->get_status());
-            $this->wc_emails = WC_Emails::instance() ?? new WC_Emails(); // must re-initiate class to trigger custom email classes
+            $this->wc_emails = WC_Emails::instance(); // must re-initiate class to trigger custom email classes
+            $this->wc_emails->init(); // initiate only for custom emails...
             do_action($order_status->get_email_action() . ($is_reminder ? '_reminder' : ''), $order);
 
         } catch ( Exception $e ) {
@@ -95,7 +135,10 @@ class VTACosEmailManager {
 
         $tomorrow_time->setTime((int)$hours ?? 0, (int)$minutes ?? 0);
 
-        if ( !wp_get_scheduled_event($this->reminder_emails_hook, [ $order_status ]) ) {
+        $tomorrow_day = $tomorrow_time->format('l');
+        $is_weekend   = $tomorrow_day === 'Saturday' || $tomorrow_day === 'Sunday';
+
+        if ( !wp_get_scheduled_event($this->reminder_emails_hook, [ $order_status ]) && !$is_weekend ) {
             wp_schedule_single_event($tomorrow_time->getTimestamp(), $this->reminder_emails_hook, [ $order_status ]);
         }
     }
@@ -136,6 +179,34 @@ class VTACosEmailManager {
         $new_order_email->trigger($order->get_id());
     }
 
+    // WOOCOMMERCE TEMPLATE OVERRIDES //
+
+    /**
+     * Locate WC email templates within this plugin to override default WC email templates.
+     * NOTE: This does not override WC templates defined within a theme
+     * @param string $template_name default template file path
+     * @param string $template_path template file slug
+     * @param string $default_path template file name
+     * @return string
+     */
+    public function use_plugin_wc_overrides(
+        string $template_name,
+        string $template_path = '',
+        string $default_path = ''
+    ): string {
+        $wc_templates_dir = ABSPATH . 'wp-content/plugins/woocommerce/templates/';
+
+        // check if template file exists within plugin defined templates
+        if ( preg_match("#$wc_templates_dir#", $template_name) ) {
+            $rel_template_path = str_replace($wc_templates_dir, '', $template_name);
+            $plugin_path       = untrailingslashit(plugin_dir_path(__DIR__));
+
+            $target_template = "{$plugin_path}/woocommerce/{$rel_template_path}";
+            $template_name   = file_exists($target_template) ? $target_template : $template_name;
+        }
+        return $template_name;
+    }
+
     // PRIVATE METHODS //
 
     /**
@@ -168,14 +239,20 @@ class VTACosEmailManager {
 
             foreach ( $order_statuses as $order_status ) {
                 $has_template = current(array_filter($existing_email_ids, function ( string $id /** i.e. "customer_completed_order" */ ) use ( $order_status ) {
-                    return preg_match("/{$order_status->get_cos_key(false)}/", $id);
+                    $cos_key        = $order_status->get_cos_key(); // order status key
+                    $cos_key_hyphen = str_replace('-', '_', $cos_key);
+                    return preg_match("/($cos_key)|($cos_key_hyphen)/", $id);
                 }));
 
                 // add order status without email template
                 // also create action to send email template for that particular order status change
                 if ( !$has_template ) {
                     $no_email_statuses[] = $order_status;
-                    add_action("woocommerce_order_status_{$order_status->get_cos_key(false)}", [ $this, 'send_email' ], 10, 2);
+                    add_action("woocommerce_order_status_{$order_status->get_cos_key()}", [ $this, 'send_email' ], 10, 2);
+                }
+                // also created custom trigger action for hardcoded default order status
+                foreach ( $this->default_order_statuses as $cos_key ) {
+                    add_action("woocommerce_order_status_{$cos_key}", [ $this, 'send_email' ], 10, 2);
                 }
             }
 
@@ -219,6 +296,19 @@ class VTACosEmailManager {
             $datetime = new DateTime();
             $datetime->setTimezone($tz);
             return $datetime;
+        }
+    }
+
+    /**
+     * Checks if we are in WC Email Settings page. If so, reinitialize emails to include in custom options.
+     * @return void
+     */
+    private function add_custom_emails_settings(): void {
+        [ 'query_params' => $query_params ] = get_query_params();
+
+        // re-initialize WC_Emails if in email settings page
+        if ( is_admin() && in_array('wc-settings', $query_params) && in_array('email', $query_params) ) {
+            $this->wc_emails->init();
         }
     }
 }

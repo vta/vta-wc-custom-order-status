@@ -82,7 +82,7 @@ class VTACustomEmail extends WC_Email {
             $this->placeholders['{site_url}']                = site_url();
 
             // send the email only if use enabled this notification
-            if ( $this->is_enabled() && $this->get_recipient() ) {
+            if ( $this->is_enabled() && !empty($recipient) ) {
                 $this->send($recipient, $this->get_subject(), $this->get_content(), $this->get_headers(), []);
             }
         }

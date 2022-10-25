@@ -53,4 +53,14 @@ _**NOTE**: "Default" & "Arrangement" keys are used on the resulting array from `
 
 ---
 
-To be continued...
+## Custom Emails
+
+A WooCommerce email is attached to the order status. All emails will use our custom email class `classes/VTACustomEmail.php` which uses our custom email templates defined in `templates/`. The settings can be found in **WooCommerce** -> **Settings** -> **Emails**.
+
+![image](https://user-images.githubusercontent.com/40375295/197860308-a4848ba7-97d7-4910-9c98-7bd0a8ec25b3.png)
+
+### Reminder Emails
+
+If an order status has been configured to have a reminder email, an additional, separate email template will be available for admins to configured. Reminder time and action button to "Complete" are configurable.
+
+![image](https://user-images.githubusercontent.com/40375295/197860934-b7929961-d0a7-4586-8292-926c7b0c5b19.png)

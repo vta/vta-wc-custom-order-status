@@ -99,6 +99,41 @@
 
         <hr>
 
+        <div class="settings">
+
+            <h3>Settings</h3>
+
+            <p class="settings-overview">
+                In the settings page, you can configure global configuration settings that affect custom order status
+                from either the admin side or customer side.
+            </p>
+
+            <figure>
+                <img src="<?php echo plugin_dir_url(__DIR__) . '../assets/images/vta-cos-settings.png'; ?>"
+                     alt="Custom Order Status Email Templates">
+                <figcaption>Custom Email templates for Custom Order Statuses.</figcaption>
+            </figure>
+
+            <h4>Arrangement</h4>
+
+            <p class="settings-arrangement">
+                The order of the custom order statuses can be arranged via Drag & Drop editor. Once completed, click
+                "Save" to keep the arrangement. The arrangement will be reflected in the WooCommerce dropdowns
+                and quick links filters in the Orders table.
+            </p>
+
+            <h4>Default Order Status</h4>
+
+            <p class="settings-default">
+                Select a defined order status and click "Save" to assign a default order status. This order status will
+                automatically be assigned to all new customer orders. If this order status is deleted or unpublished,
+                the next order status in the arrangement field will become the default order status.
+            </p>
+
+        </div>
+
+        <hr>
+
         <div class="custom-emails">
             <h3>Custom Emails</h3>
 

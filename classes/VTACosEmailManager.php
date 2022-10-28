@@ -4,7 +4,6 @@ if ( !defined('ABSPATH') ) {
 }
 
 /**
- * @class VTACosEmailManager
  * Custom class to provide email functionality to all custom classes without default WooCommerce email templates.
  */
 class VTACosEmailManager {
@@ -17,7 +16,7 @@ class VTACosEmailManager {
     /** @var VTACustomOrderStatus[] */
     private array $no_email_statuses;
 
-    /** @var string[] hardcoded default statuses. Emails that we want to override with our custom class & templates   */
+    /** @var string[] hardcoded default statuses. Emails that we want to override with our custom class & templates */
     private array $default_order_statuses = [
         'processing',
         'on-hold',
@@ -113,8 +112,8 @@ class VTACosEmailManager {
         try {
             $order_status    = VTACustomOrderStatus::get_cos_by_key($order->get_status());
             $this->wc_emails = WC_Emails::instance(); // must re-initiate class to trigger custom email classes
-            $this->wc_emails->init(); // initiate only for custom emails...
-            do_action($order_status->get_email_action() . ($is_reminder ? '_reminder' : ''), $order);
+            $this->wc_emails->init();                 // initiate only for custom emails...
+            do_action($order_status->get_email_action() . ( $is_reminder ? '_reminder' : '' ), $order);
 
         } catch ( Exception $e ) {
             error_log("VTACosEmailManager::send_email() error. Could not send email for Order #$order_id - $e");

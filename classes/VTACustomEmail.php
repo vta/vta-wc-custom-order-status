@@ -1,9 +1,9 @@
 <?php
 
 /**
- * @title VTACustomEmail
  * Extends the core WC_Email class. This email is meant to compliment VTA's Custom Order Status.
  * Reminder Emails are also configured here to allow order status to have 2 emails per order status.
+ *
  * NOTE: These should only be used for order status notifications. This email class will not work with
  * forgotten passwords, new user, etc.
  */
@@ -20,15 +20,15 @@ class VTACustomEmail extends WC_Email {
         $this->is_reminder = $is_reminder;
 
         // Add email ID, title, description, heading, subject
-        $this->id             = "custom_email_{$order_status->get_cos_key()}" . ($is_reminder ? '_reminder' : '');
+        $this->id             = "custom_email_{$order_status->get_cos_key()}" . ( $is_reminder ? '_reminder' : '' );
         $this->customer_email = true;
-        $this->title          = "{$order_status->get_cos_name()} Email" . ($is_reminder ? ' (Reminder)' : '');
+        $this->title          = "{$order_status->get_cos_name()} Email" . ( $is_reminder ? ' (Reminder)' : '' );
         $this->description    = $is_reminder
             ? "This is a reminder email for Order Status \"{$order_status->get_cos_name()}\""
             : "This email is received when an order status is changed to \"{$order_status->get_cos_name()}\".";
 
-        $this->heading = "{$order_status->get_cos_name()}" . ($is_reminder ? ' (Reminder)' : '');
-        $this->subject = "{$order_status->get_cos_name()} (Order #{order_number}) - {order_date}" . ($is_reminder ? ' (Reminder)' : '');
+        $this->heading = "{$order_status->get_cos_name()}" . ( $is_reminder ? ' (Reminder)' : '' );
+        $this->subject = "{$order_status->get_cos_name()} (Order #{order_number}) - {order_date}" . ( $is_reminder ? ' (Reminder)' : '' );
 
         // email template path
         $this->template_html  = $is_reminder ? 'templates/custom-reminder-email-html.php' : 'templates/custom-email-html.php';

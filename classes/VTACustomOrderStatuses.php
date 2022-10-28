@@ -1,26 +1,25 @@
 <?php
 
 /**
- * @class VTA Custom Order Statuses
  * Main class for Post Management for "vta_order_status" CPT.
  */
 class VTACustomOrderStatuses {
 
-    // PLUGIN vars
+    // PLUGIN vars //
     private string $plugin_name, $plugin_version;
 
-    // POST vars
+    // POST vars //
     private string $post_type             = VTA_COS_CPT;
     private string $meta_color_key        = META_COLOR_KEY;
     private string $meta_reorderable_key  = META_REORDERABLE_KEY;
     private string $meta_has_reminder_key = META_HAS_REMINDER_KEY;
 
-    // SETTINGS var
+    // SETTINGS vars //
     private VTACosSettings $settings;
     private string         $settings_name                = VTA_COS_SETTINGS_NAME;
     private string         $order_status_arrangement_key = ORDER_STATUS_ARRANGEMENT_KEY;
 
-    // HELP PAGE vars
+    // HELP PAGE vars //
     private string $help_page_slug = 'vta-cos-help';
 
     /**
@@ -536,10 +535,10 @@ class VTACustomOrderStatuses {
      * @return void
      */
     public function render_help_page(): void {
-        include_once(plugin_dir_path(__DIR__) . '/admin/views/help.php');
+        include_once( plugin_dir_path(__DIR__) . '/admin/views/help.php' );
     }
 
-    // PRIVATE METHODS
+    // PRIVATE METHODS //
 
     /**
      * Returns index of Order Status arrangement placement..

@@ -1,7 +1,6 @@
 <?php
 
 /**
- * @class VTA WooCommerce Integration
  * Integrates custom order statuses to core WooCommerce hooks to reflect admin settings & custom posts in this plugin.
  */
 class VTAWooCommerce {
@@ -164,7 +163,7 @@ class VTAWooCommerce {
         // pending orders
         $html = sprintf(
             '<a href="edit.php?post_status=pending-orders&#038;post_type=shop_order" %s>Pending Orders <span class="count">(%d)</span></a>',
-            ($query_params['post_status'] ?? null) === 'pending-orders' ? 'class="current" aria-current="page"' : '',
+            ( $query_params['post_status'] ?? null ) === 'pending-orders' ? 'class="current" aria-current="page"' : '',
             $this->get_pending_orders_count()
         );
 
@@ -310,7 +309,7 @@ class VTAWooCommerce {
         $arrangement_ids = $this->settings->get_arrangement();
 
         try {
-            $arrangement_cos_keys = array_map(fn( int $post_id ) => (new VTACustomOrderStatus($post_id))->get_cos_key(true), $arrangement_ids);
+            $arrangement_cos_keys = array_map(fn( int $post_id ) => ( new VTACustomOrderStatus($post_id) )->get_cos_key(true), $arrangement_ids);
             return array_replace(array_flip($arrangement_cos_keys), $order_statuses);
         } catch ( Exception $e ) {
             error_log("VTAWooCommerce::sort_order_status error. Could not sort custom order statuses - $e");
@@ -324,7 +323,10 @@ class VTAWooCommerce {
      */
     private function get_pending_orders_count(): int {
         $non_reorderable_cos = $this->get_pending_cos_keys();
-        $orders              = wc_get_orders([ 'status' => $non_reorderable_cos ]);
+        $orders              = wc_get_orders([
+            'status' => $non_reorderable_cos,
+            'limit'  => -1
+        ]);
 
         // manually filter orders since pre_get_posts interferes with count
         $filtered_orders = array_filter(
@@ -349,9 +351,8 @@ class VTAWooCommerce {
             'failed'
         ];
 
-        $vta_cos      = $this->vta_cos;
         $filtered_cos = array_filter(
-            $vta_cos,
+            $this->vta_cos,
             fn( VTACustomOrderStatus $order_status ) => !$order_status->get_cos_reorderable() && !in_array($order_status->get_cos_key(), $other_non_pending_statuses)
         );
 

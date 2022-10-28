@@ -45,9 +45,10 @@ class VTAWooCommerce {
         $this->vta_cos             = $this->get_cos();
         $this->pending_status_keys = $this->get_pending_cos_keys(true);
 
-        /**
-         * Need to run this hook first before other filter methods are ran in the Orders page
-         */
+        // clean up options from old custom emails
+        $this->deprecated_options_cleanup();
+
+        // Need to run this hook first before other filter methods are ran in the Orders page
         add_action('pre_get_posts', [ $this, 'query_include_deprecated' ], 10, 1);
         add_action('pre_get_posts', [ $this, 'query_pending_orders' ], 10, 1);
 
@@ -357,6 +358,19 @@ class VTAWooCommerce {
         );
 
         return array_values(array_map(fn( VTACustomOrderStatus $order_status ) => $order_status->get_cos_key($with_prefix), $filtered_cos));
+    }
+
+    /**
+     * Cleans up old Options API from past custom emails and others (no longer used)
+     * @return void
+     */
+    private function deprecated_options_cleanup(): void {
+        delete_option('woocommerce_finishing_email_settings');
+        delete_option('woocommerce_special_email_settings');
+        delete_option('woocommerce_ready_for_pickup_email_settings');
+        delete_option('woocommerce_proof_ready_email_settings');
+        delete_option('woocommerce_proof_email_settings');
+        delete_option('woocommerce_ready_reminder_email_settings');
     }
 
 }

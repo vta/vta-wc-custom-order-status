@@ -59,6 +59,7 @@ class VTACosSettingsManager {
                 $this->plugin_version
             );
 
+            // todo - missing jquery-ui-core
             wp_enqueue_script('jquery-ui-sortable');
             wp_enqueue_script('jquery-ui-draggable');
             wp_enqueue_style('wp-jquery-ui-dialog');

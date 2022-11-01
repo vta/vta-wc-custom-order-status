@@ -31,8 +31,8 @@
         <div id="reset-confirm-dialog" title="Reset Order Statuses">
             <p>
                 <span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span> Default Order
-                Statuses
-                will be reset to its original settings & all custom Order Statuses will be deleted. Are you sure?
+                Statuses will be reset to its original settings & all custom Order Statuses will be deleted.
+                Are you sure?
             </p>
         </div>
     </form>

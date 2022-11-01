@@ -9,14 +9,14 @@
  * that starts the plugin.
  *
  * @link              https://jamespham.io
- * @since             0.6
+ * @since             1.1
  * @package           Vta_Wc_Custom_Order_Status
  *
  * @wordpress-plugin
  * Plugin Name:       VTA WooCommerce Custom Order Status
  * Plugin URI:        https://jamespham.io
  * Description:       This is a short description of what the plugin does. It's displayed in the WordPress admin area.
- * Version:           0.5
+ * Version:           1.1
  * Author:            James Pham
  * Author URI:        https://jamespham.io
  * License:           GPL-2.0+
@@ -27,7 +27,7 @@
 
 /** PLUGIN CONSTANTS **/
 // Plugin
-const VTA_WC_CUSTOM_ORDER_STATUS_VERSION = '1.0';
+const VTA_WC_CUSTOM_ORDER_STATUS_VERSION = '1.1';
 const VTA_WC_COS_PLUGIN_NAME             = 'vta-wc-custom-order-status';
 // Post
 const VTA_COS_CPT           = 'vta_order_status';

@@ -1,7 +1,6 @@
 <?php
 
 /**
- * VTA Custom Order Status Class
  * Encapsulates "vta_order_status" post types for easier access
  */
 class VTACustomOrderStatus {

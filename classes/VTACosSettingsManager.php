@@ -1,7 +1,6 @@
 <?php
 
 /**
- * @class VTACostSettingsManager
  * Settings manager for plugin
  */
 class VTACosSettingsManager {
@@ -47,7 +46,7 @@ class VTACosSettingsManager {
      * @return void
      */
     public function enqueue_scripts(): void {
-        list('query_params' => $query_params) = get_query_params();
+        [ 'query_params' => $query_params ] = get_query_params();
 
         // Settings page
         $is_settings_page = in_array($this->post_type, $query_params) && in_array($this->settings_page, $query_params);
@@ -200,8 +199,8 @@ class VTACosSettingsManager {
      */
     public function render_settings_page(): void {
         $reorderable_statuses = $this->settings->get_reorderable_statuses();
-        $reminder_statuses = $this->settings->get_reminder_statuses();
-        include_once(plugin_dir_path(__DIR__) . '/admin/views/settings-page.php');
+        $reminder_statuses    = $this->settings->get_reminder_statuses();
+        include_once( plugin_dir_path(__DIR__) . '/admin/views/settings-page.php' );
     }
 
     /**

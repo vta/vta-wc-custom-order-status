@@ -1,7 +1,6 @@
 <?php
 
 /**
- * @class VTA WooCommerce Integration
  * Integrates custom order statuses to core WooCommerce hooks to reflect admin settings & custom posts in this plugin.
  */
 class VTAWooCommerce {
@@ -41,6 +40,8 @@ class VTAWooCommerce {
 	public function __construct( string $plugin_name, string $plugin_version, VTACosSettings $settings ) {
 		$this->plugin_name    = $plugin_name;
 		$this->plugin_version = $plugin_version;
+
+		$this->deprecated_options_cleanup();
 
 		$this->settings            = $settings;
 		$this->vta_cos             = $this->get_cos();
@@ -193,7 +194,7 @@ class VTAWooCommerce {
 			preg_match('/edit\.php/', $path)
 		) {
 			// default bulk actions.
-            // Only add if it's set in current view
+			// Only add if it's set in current view
 			$bulk_action_trash    = [];
 			$default_bulk_actions = [ 'trash', 'untrash', 'delete' ];
 			foreach ( $default_bulk_actions as $default_bulk_action ) {
@@ -330,7 +331,7 @@ class VTAWooCommerce {
 	 */
 	private function get_pending_orders_count(): int {
 		$non_reorderable_cos = $this->get_pending_cos_keys();
-		$orders              = wc_get_orders([ 'status' => $non_reorderable_cos ]);
+		$orders              = wc_get_orders([ 'status' => $non_reorderable_cos, 'limit' => -1 ]);
 
 		// manually filter orders since pre_get_posts interferes with count
 		$filtered_orders = array_filter(
@@ -362,6 +363,19 @@ class VTAWooCommerce {
 		);
 
 		return array_values(array_map(fn( VTACustomOrderStatus $order_status ) => $order_status->get_cos_key($with_prefix), $filtered_cos));
+	}
+
+	/**
+	 * Cleans up old Options API from past custom emails and others (no longer used)
+	 * @return void
+	 */
+	private function deprecated_options_cleanup(): void {
+		delete_option('woocommerce_finishing_email_settings');
+		delete_option('woocommerce_special_email_settings');
+		delete_option('woocommerce_ready_for_pickup_email_settings');
+		delete_option('woocommerce_proof_ready_email_settings');
+		delete_option('woocommerce_proof_email_settings');
+		delete_option('woocommerce_ready_reminder_email_settings');
 	}
 
 }

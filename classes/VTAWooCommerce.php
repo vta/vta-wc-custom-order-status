@@ -64,6 +64,7 @@ class VTAWooCommerce {
 
 		// Add Re-orderable statuses
 		add_filter('woocommerce_valid_order_statuses_for_order_again', [ $this, 'add_reorderable_statuses' ], 9, 1);
+		add_filter('wc_order_is_editable', [ $this, 'add_editable_statuses' ], 10, 2);
 	}
 
 	// POST STATUS / ORDER STATUS REGISTRATION CALLBACKS //
@@ -283,6 +284,22 @@ class VTAWooCommerce {
 				$order_statuses[] = $order_status->get_cos_key();
 		}
 		return $order_statuses;
+	}
+
+	/**
+	 * Filter CB that allows non-finished orders to be editable.
+	 * @param bool $is_editable
+	 * @param WC_Order $order current order
+	 * @return bool order statuses that should be allowed to re-order
+	 */
+	public function add_editable_statuses( bool $is_editable, WC_Order $order ): bool {
+		$status = $order->get_status();
+		foreach ( $this->settings->get_reorderable_statuses() as $vta_cos ) {
+            if ($status === $vta_cos->get_cos_key()) {
+                return false;
+            }
+		}
+        return true;
 	}
 
 	// PRIVATE METHODS //

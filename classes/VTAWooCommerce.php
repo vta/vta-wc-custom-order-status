@@ -65,6 +65,7 @@ class VTAWooCommerce {
 		// Add Re-orderable statuses
 		add_filter('woocommerce_valid_order_statuses_for_order_again', [ $this, 'add_reorderable_statuses' ], 9, 1);
 		add_filter('wc_order_is_editable', [ $this, 'add_editable_statuses' ], 10, 2);
+		add_action('woocommerce_order_status_changed', [ $this, 'add_date_completed' ], 10, 4);
 	}
 
 	// POST STATUS / ORDER STATUS REGISTRATION CALLBACKS //
@@ -130,23 +131,23 @@ class VTAWooCommerce {
 			preg_match('/edit\.php/', $path)
 		) {
 			?>
-            <style>
-                <?php foreach ($this->vta_cos as $order_status) {
-                    $status = $order_status->get_cos_key();
-                    $color = $order_status->get_cos_color();
+			<style>
+				<?php foreach ($this->vta_cos as $order_status) {
+					$status = $order_status->get_cos_key();
+					$color = $order_status->get_cos_color();
 
-                    $css_rule = <<<CSS
-                        mark.order-status.status-$status {
-                            background: $color;
-                            color: #fff;
-                            font-weight: 500;
-                            text-shadow: 1px 1px rgba(0,0,0,0.5);
-                        }
-                    CSS;
+					$css_rule = <<<CSS
+						mark.order-status.status-$status {
+							background: $color;
+							color: #fff;
+							font-weight: 500;
+							text-shadow: 1px 1px rgba(0,0,0,0.5);
+						}
+					CSS;
 
-                    echo $css_rule;
-                }?>
-            </style>
+					echo $css_rule;
+				}?>
+			</style>
 			<?php
 		}
 	}
@@ -287,6 +288,45 @@ class VTAWooCommerce {
 	}
 
 	/**
+	 * @param int $order_id
+	 * @param string $prev_status
+	 * @param string $curr_status
+	 * @param WC_Order $order
+	 * @return void
+	 */
+	public function add_date_completed(
+		int $order_id,
+		string $prev_status,
+		string $curr_status,
+		WC_Order $order
+	): void {
+		$curr_completed = false;
+		$prev_completed = false;
+
+		foreach ( $this->settings->get_reorderable_statuses() as $order_status ) {
+			// 1. check if curr status is a reorderable status
+			if ( $order_status->get_cos_key() === $curr_status ) {
+				$curr_completed = true;
+			}
+			// 2. check if prev status is a reorderable status
+			if ( $order_status->get_cos_key() === $prev_status ) {
+				$prev_completed = true;
+			}
+		}
+
+		// 3. if prev was not completed & curr is completed,
+		// set new completed date
+		if ( !$prev_completed && $curr_completed ) {
+			try {
+				$order->set_date_completed(time());
+				$order->save();
+			} catch ( Exception $e ) {
+				error_log("Could not set date completed for Order ID #$order_id - $e", E_ERROR);
+			}
+		}
+	}
+
+	/**
 	 * Filter CB that allows non-finished orders to be editable.
 	 * @param bool $is_editable
 	 * @param WC_Order $order current order
@@ -295,11 +335,11 @@ class VTAWooCommerce {
 	public function add_editable_statuses( bool $is_editable, WC_Order $order ): bool {
 		$status = $order->get_status();
 		foreach ( $this->settings->get_reorderable_statuses() as $vta_cos ) {
-            if ($status === $vta_cos->get_cos_key()) {
-                return false;
-            }
+			if ( $status === $vta_cos->get_cos_key() ) {
+				return false;
+			}
 		}
-        return true;
+		return true;
 	}
 
 	// PRIVATE METHODS //
